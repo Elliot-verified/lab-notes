@@ -1,0 +1,97 @@
+id: cell_passage
+name: Mammalian Cell Passage (adherent)
+version: "0.1"
+description: |
+  Routine 1:N split of an adherent mammalian line (e.g. HEK293, HeLa).
+  Branches on confluency at the start (abort early if not ready) and on
+  the post-trypsinization cell count (adjust seeding density).
+
+steps:
+  - id: check_confluency
+    title: Inspect dish under microscope; estimate confluency
+    results:
+      - name: confluency_pct
+        type: number
+        label: Confluency (%)
+    rules:
+      - when: "confluency_pct < 50"
+        then:
+          insert_after: this
+          steps: [too_sparse_recheck_tomorrow]
+      - when: "confluency_pct > 95"
+        then:
+          insert_after: this
+          steps: [overgrowth_warning]
+
+  - id: warm_media
+    title: Pre-warm DMEM + 10% FBS + Pen/Strep, PBS, and trypsin at 37 °C
+
+  - id: aspirate_media
+    title: Aspirate spent media
+
+  - id: pbs_wash
+    title: Wash monolayer with 5 mL PBS, aspirate
+
+  - id: trypsinize
+    title: Add 1 mL 0.25% trypsin-EDTA, incubate at 37 °C for 3–5 min
+    description: Tap dish; confirm detachment under microscope.
+
+  - id: quench
+    title: Add 4 mL pre-warmed complete media to neutralize trypsin
+    description: Pipette up and down to break up clumps; transfer to a 15 mL tube.
+
+  - id: spin_resuspend
+    title: Spin 200 × g for 5 min, aspirate supernatant, resuspend in 5 mL media
+
+  - id: count
+    title: Count cells (hemocytometer or automated counter)
+    results:
+      - name: cells_per_ml
+        type: number
+        label: Cells per mL
+      - name: viability_pct
+        type: number
+        label: Viability (%)
+    rules:
+      - when: "viability_pct < 80"
+        then:
+          insert_after: this
+          steps: [low_viability_note]
+
+  - id: reseed
+    title: Seed into a new T75 at desired density
+    description: |
+      Typical: 1–2 × 10⁶ cells in 12 mL complete media for a 3-day passage.
+      Adjust based on growth rate of the line.
+    results:
+      - name: seeded_cells
+        type: number
+        label: Cells seeded
+      - name: passage_number
+        type: number
+        label: Passage number
+
+  - id: incubate
+    title: Return to 37 °C / 5% CO₂ incubator
+
+step_library:
+  - id: too_sparse_recheck_tomorrow
+    title: Not ready — return tomorrow
+    description: Cells are too sparse to passage productively. Re-incubate and re-check in 24 h.
+    rules:
+      - when: "true"
+        then:
+          end: true
+
+  - id: overgrowth_warning
+    title: Note — culture was over-confluent at passage
+    description: |
+      Cells were >95% confluent. Expect some loss of viability and possible
+      contact inhibition effects. Tighten passage schedule going forward.
+
+  - id: low_viability_note
+    title: Note — low viability after trypsinization
+    description: |
+      Viability <80%. Reduce trypsin incubation time, ensure trypsin was
+      pre-warmed, and check that PBS was Ca²⁺/Mg²⁺-free. Consider freezing
+      a fresh vial from an earlier passage.

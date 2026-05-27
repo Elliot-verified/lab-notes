@@ -1,5 +1,5 @@
 from app import runs
-from app.protocols import get_protocol
+from app.protocols import get_protocol, load_all
 
 
 def _ids(run):
@@ -60,6 +60,62 @@ def test_transformation_branches_on_colony_count(db_session):
     assert "replate_more_volume" in ids
     # pick_colonies should still be pending (rule was insert_after, not skip_to)
     assert _statuses(run)["pick_colonies"] == "pending"
+
+
+def test_all_protocols_load():
+    protocols = load_all()
+    expected = {
+        "bacterial_transformation",
+        "growth_curve",
+        "pcr_amplification",
+        "plasmid_miniprep",
+        "cell_passage",
+    }
+    assert expected.issubset(protocols.keys())
+    # Every step referenced in a branching rule must resolve.
+    for proto in protocols.values():
+        library = proto.all_steps()
+        for step in proto.steps + list(proto.step_library.values()):
+            for rule in step.rules:
+                refs = []
+                then = rule.get("then", {})
+                if "steps" in then:
+                    refs.extend(then["steps"])
+                for key in ("insert_after", "skip_to", "repeat"):
+                    if key in then and then[key] != "this":
+                        refs.append(then[key])
+                for ref in refs:
+                    assert ref in library, (
+                        f"{proto.id}: step {step.id!r} rule refs unknown step {ref!r}"
+                    )
+
+
+def test_cell_passage_ends_early_when_too_sparse(db_session):
+    proto = get_protocol("cell_passage")
+    run = runs.create_run(db_session, proto.id, name="sparse")
+    runs.complete_step(db_session, run, "check_confluency", {"confluency_pct": 20}, None, False)
+    runs.complete_step(db_session, run, "too_sparse_recheck_tomorrow", {}, None, False)
+    assert run.status == "complete"
+    later = {s.step_id: s.status for s in run.steps}
+    assert later["warm_media"] == "skipped"
+    assert later["reseed"] == "skipped"
+
+
+def test_pcr_no_band_inserts_troubleshoot(db_session):
+    proto = get_protocol("pcr_amplification")
+    run = runs.create_run(db_session, proto.id, name="pcr1")
+    for step_id in ["thaw_reagents", "master_mix", "aliquot", "thermocycle"]:
+        results = {"reactions": 4} if step_id == "master_mix" else (
+            {"annealing_temp": 62} if step_id == "thermocycle" else {}
+        )
+        runs.complete_step(db_session, run, step_id, results, None, False)
+    runs.complete_step(
+        db_session, run, "gel_check",
+        {"band_present": False, "multiple_bands": False, "faint_band": False},
+        None, False,
+    )
+    ids = [s.step_id for s in sorted(run.steps, key=lambda s: s.position)]
+    assert "troubleshoot_no_band" in ids
 
 
 def test_benchling_sync_creates_entry(db_session):

@@ -1,0 +1,90 @@
+id: plasmid_miniprep
+name: Plasmid Miniprep (alkaline lysis, spin column)
+version: "0.1"
+description: |
+  Standard silica spin-column miniprep from 1–5 mL overnight culture.
+  Quantification step branches on yield and A260/A280 / A260/A230 ratios
+  to trigger ethanol re-precipitation or a re-prep from a larger culture.
+
+steps:
+  - id: harvest
+    title: Pellet 1–5 mL overnight culture
+    description: 13,000 × g for 1 min, decant supernatant fully.
+    results:
+      - name: culture_ml
+        type: number
+        label: Culture volume (mL)
+
+  - id: resuspend_p1
+    title: Resuspend pellet in 250 µL P1 (with RNase A)
+    description: Vortex until no clumps remain. Buffer must be at room temperature.
+
+  - id: lyse_p2
+    title: Add 250 µL P2, invert 4–6× to mix
+    description: |
+      Solution turns clear and viscous. Do not vortex. Proceed within 5 min.
+
+  - id: neutralize_p3
+    title: Add 350 µL N3, invert 4–6× until fully mixed
+    description: White flocculent precipitate forms.
+
+  - id: spin_lysate
+    title: Spin 10 min at 13,000 × g, transfer cleared lysate to column
+    description: Pipette gently from the top; avoid the pellet.
+
+  - id: bind
+    title: Spin column 30 s, discard flow-through
+
+  - id: wash_pe
+    title: Wash with 750 µL PE, spin 30 s, discard flow-through
+    description: Then spin empty 1 min to remove residual ethanol.
+
+  - id: elute
+    title: Elute in 30–50 µL EB or water
+    description: |
+      Let elution buffer sit on the membrane for 1 min before the final spin.
+    results:
+      - name: elution_ul
+        type: number
+        label: Elution volume (µL)
+
+  - id: quantify
+    title: Quantify on Nanodrop (or Qubit dsDNA HS)
+    results:
+      - name: concentration_ng_ul
+        type: number
+        label: Concentration
+        unit: ng/µL
+      - name: a260_a280
+        type: number
+        label: A260/A280
+      - name: a260_a230
+        type: number
+        label: A260/A230
+    rules:
+      - when: "concentration_ng_ul < 30"
+        then:
+          insert_after: this
+          steps: [reprep_larger_culture]
+      - when: "a260_a280 < 1.7 or a260_a280 > 2.0"
+        then:
+          insert_after: this
+          steps: [ethanol_reprecipitate]
+      - when: "a260_a230 < 1.8"
+        then:
+          insert_after: this
+          steps: [ethanol_reprecipitate]
+
+step_library:
+  - id: reprep_larger_culture
+    title: Re-prep from a larger culture (low yield)
+    description: |
+      Yield is too low for typical downstream use. Grow a 10 mL culture
+      overnight and repeat the miniprep, or switch to a midiprep kit.
+
+  - id: ethanol_reprecipitate
+    title: Ethanol re-precipitate to clean up
+    description: |
+      Add 0.1 vol 3 M NaOAc pH 5.2 + 2.5 vol cold ethanol. Incubate −20 °C
+      for ≥20 min, spin 15 min at 4 °C, wash pellet with 70% ethanol, air
+      dry, resuspend in EB. Re-quantify.

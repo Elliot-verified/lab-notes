@@ -1,0 +1,101 @@
+id: pcr_amplification
+name: PCR Amplification
+version: "0.1"
+description: |
+  Standard 25 µL PCR with a high-fidelity polymerase. The gel-check step
+  branches the protocol depending on whether a band of the expected size
+  appears, multiple bands appear, or the band is faint.
+
+steps:
+  - id: thaw_reagents
+    title: Thaw primers, dNTPs, buffer, and template on ice
+    description: Vortex briefly and quick-spin. Keep polymerase at −20 °C until needed.
+
+  - id: master_mix
+    title: Assemble master mix on ice
+    description: |
+      Per 25 µL reaction:
+        12.5 µL 2× polymerase master mix
+         1.0 µL forward primer (10 µM)
+         1.0 µL reverse primer (10 µM)
+         1.0 µL template
+         9.5 µL nuclease-free water
+    results:
+      - name: reactions
+        type: number
+        label: Number of reactions
+
+  - id: aliquot
+    title: Aliquot master mix + template into PCR strip
+    description: Cap tightly, quick-spin.
+
+  - id: thermocycle
+    title: Run thermocycler programme
+    description: |
+      Suggested:
+        98 °C for 30 s
+        30× (98 °C 10 s · Ta °C 20 s · 72 °C 30 s/kb)
+        72 °C for 2 min
+        4 °C hold
+    results:
+      - name: annealing_temp
+        type: number
+        label: Annealing temperature
+        unit: "°C"
+
+  - id: gel_check
+    title: Run 5 µL on a 1% agarose gel with ladder
+    results:
+      - name: band_present
+        type: boolean
+        label: Band of expected size?
+      - name: multiple_bands
+        type: boolean
+        label: Multiple bands / smear?
+      - name: faint_band
+        type: boolean
+        label: Band visible but faint?
+    rules:
+      - when: "band_present == False"
+        then:
+          insert_after: this
+          steps: [troubleshoot_no_band]
+      - when: "multiple_bands == True"
+        then:
+          insert_after: this
+          steps: [redo_higher_annealing]
+      - when: "faint_band == True"
+        then:
+          insert_after: this
+          steps: [redo_more_cycles]
+      - when: "band_present == True and multiple_bands == False and faint_band == False"
+        then:
+          skip_to: pcr_cleanup
+
+  - id: pcr_cleanup
+    title: Clean up reaction (spin column or SPRI beads)
+    results:
+      - name: yield_ng_ul
+        type: number
+        label: Final concentration (ng/µL)
+
+step_library:
+  - id: troubleshoot_no_band
+    title: Troubleshoot — no product
+    description: |
+      Verify primer stocks (dilute fresh from 100 µM), retest with a known-good
+      template + primer pair as positive control, drop annealing temperature
+      by 3–5 °C, double the template input, and ensure the polymerase is
+      added last and kept on ice.
+
+  - id: redo_higher_annealing
+    title: Repeat PCR with higher annealing temperature
+    description: |
+      Raise Ta by 3–5 °C to suppress non-specific priming. Optionally add
+      1× GC enhancer or 2–5% DMSO if the template is GC-rich.
+
+  - id: redo_more_cycles
+    title: Repeat PCR with more cycles or more template
+    description: |
+      Increase cycles to 35 and/or double the template input. If yield is
+      still low, re-check primer Tm and consider redesigning.
