@@ -83,7 +83,27 @@ new one. To wire up the real Benchling SDK, swap the implementation behind
 Synced data lives in `backend/data/benchling-mock.json` so you can inspect what
 would be pushed.
 
+## Deploying to Vercel
+
+The repo is configured for Vercel: `api/index.py` is the ASGI entrypoint,
+`vercel.json` routes `/api/*` to it and serves the Vite build for everything
+else. SQLite is replaced by Postgres in the hosted environment — set a
+`DATABASE_URL` env var (the Neon integration provisions and injects this
+automatically).
+
+```bash
+# One-time
+vercel link
+# Add the Neon integration in the Vercel dashboard (it sets DATABASE_URL)
+vercel deploy --prod
+```
+
+`api/requirements.txt` lists the Python deps for the function. The
+`includeFiles` config in `vercel.json` bundles `backend/` so the function
+can import `app.main:app`.
+
 ## Status
 
-v0.1 — single-tenant, no auth, SQLite, mock Benchling. Suitable for solo
-benchtop use; not for a shared lab without adding auth and persistence.
+v0.1 — single-tenant, no auth, mock Benchling. SQLite locally, Postgres on
+Vercel. Suitable for solo benchtop use; not for a shared lab without
+adding auth.
