@@ -1,0 +1,81 @@
+id: bacterial_transformation
+name: Bacterial Transformation (heat shock)
+version: "0.1"
+description: |
+  Standard heat-shock transformation of competent E. coli. Branches on
+  colony count after recovery.
+
+steps:
+  - id: thaw_cells
+    title: Thaw competent cells on ice
+    description: 10 minutes on ice, do not vortex.
+
+  - id: add_dna
+    title: Add 1–5 µL plasmid DNA
+    description: Mix by flicking, keep on ice.
+    results:
+      - name: dna_ng
+        type: number
+        label: DNA added (ng)
+        unit: ng
+
+  - id: incubate_ice
+    title: Incubate on ice for 30 min
+
+  - id: heat_shock
+    title: Heat shock at 42 °C for 45 s
+
+  - id: recover
+    title: Recover in SOC at 37 °C, 1 hr, shaking
+
+  - id: plate
+    title: Plate 100 µL on selective media
+    description: Incubate overnight at 37 °C.
+
+  - id: count_colonies
+    title: Count colonies the next morning
+    results:
+      - name: colony_count
+        type: number
+        label: Colony count
+      - name: contamination
+        type: boolean
+        label: Visible contamination?
+    rules:
+      - when: "contamination == True"
+        then:
+          insert_after: this
+          steps: [restreak_single_colony, troubleshoot_contamination]
+      - when: "colony_count == 0"
+        then:
+          insert_after: this
+          steps: [troubleshoot_no_colonies]
+      - when: "colony_count < 10"
+        then:
+          insert_after: this
+          steps: [replate_more_volume]
+      - when: "colony_count >= 10"
+        then:
+          skip_to: pick_colonies
+
+  - id: pick_colonies
+    title: Pick 3–5 isolated colonies into overnight cultures
+
+step_library:
+  - id: troubleshoot_no_colonies
+    title: Troubleshoot — no colonies
+    description: |
+      Verify antibiotic concentration, retest competency with control plasmid,
+      check DNA on a gel, repeat transformation with positive control.
+
+  - id: replate_more_volume
+    title: Replate remaining recovery (low yield)
+    description: Plate the rest of the recovery volume on a fresh selective plate.
+
+  - id: troubleshoot_contamination
+    title: Troubleshoot — contamination observed
+    description: Autoclave waste, replace LB stock, check antibiotic potency.
+
+  - id: restreak_single_colony
+    title: Restreak a single isolated colony
+    description: Restreak onto a fresh selective plate to purify away contaminants.

@@ -1,0 +1,44 @@
+id: growth_curve
+name: OD600 Growth Curve
+version: "0.1"
+description: |
+  Measure OD600 at 30-minute intervals. Repeats the measurement step until
+  the culture reaches mid-log (OD600 >= 0.5), then proceeds to harvest.
+
+steps:
+  - id: inoculate
+    title: Inoculate 50 mL LB with overnight culture (1:100)
+    results:
+      - name: starting_od
+        type: number
+        label: Starting OD600
+
+  - id: measure_od
+    title: Measure OD600
+    results:
+      - name: od600
+        type: number
+        label: OD600
+    rules:
+      - when: "od600 < 0.2"
+        then:
+          insert_after: this
+          steps: [wait_60_min, measure_od]
+      - when: "od600 < 0.5"
+        then:
+          insert_after: this
+          steps: [wait_30_min, measure_od]
+      - when: "od600 >= 0.5"
+        then:
+          skip_to: harvest
+
+  - id: harvest
+    title: Spin down 25 mL at 4000 g, 10 min, 4 °C
+    description: Discard supernatant, snap-freeze pellet.
+
+step_library:
+  - id: wait_30_min
+    title: Incubate 30 min at 37 °C, 220 rpm
+
+  - id: wait_60_min
+    title: Incubate 60 min at 37 °C, 220 rpm

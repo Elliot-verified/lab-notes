@@ -1,0 +1,184 @@
+:root {
+  --bg: #f7f7f5;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #e2e2dd;
+  --accent: #2d6cdf;
+  --accent-fg: white;
+  --done: #1f9d55;
+  --pending: #8a8a83;
+  --skipped: #b08400;
+  --error: #b00020;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 15px;
+}
+
+.app { max-width: 880px; margin: 0 auto; padding: 24px; }
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.brand-sub { color: var(--muted); font-size: 13px; }
+
+h2 { margin: 24px 0 12px; font-size: 16px; font-weight: 600; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.card-title { font-weight: 600; margin-bottom: 4px; }
+.card-meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.card-desc { font-size: 13px; color: #333; margin: 0 0 12px; white-space: pre-wrap; }
+
+button {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover { filter: brightness(1.05); }
+button.ghost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.error {
+  background: #fff0f0;
+  border: 1px solid #f5c2c2;
+  color: var(--error);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 12px 0;
+}
+
+.run-list { list-style: none; padding: 0; }
+.run-list li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+.run-list a { color: var(--fg); text-decoration: none; font-weight: 500; }
+
+.status {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #eee;
+  color: #444;
+}
+.status-in_progress { background: #e8f0fc; color: #2d6cdf; }
+.status-complete { background: #e6f5ec; color: var(--done); }
+
+.run-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.run-actions { text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+
+.steps { list-style: none; padding: 0; }
+
+.step {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.step.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(45, 108, 223, 0.12);
+}
+
+.step-skipped { opacity: 0.55; }
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-title { font-weight: 500; }
+
+.step-desc { margin: 6px 0; color: #444; white-space: pre-wrap; font-size: 13px; }
+
+.pill {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #eee;
+  color: #555;
+  letter-spacing: 0.05em;
+}
+.pill-pending { background: #f0efe9; color: var(--pending); }
+.pill-done { background: #e6f5ec; color: var(--done); }
+.pill-skipped { background: #fff4d6; color: var(--skipped); }
+
+.step-form {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.field span { color: var(--muted); }
+.field input, .field select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  background: white;
+}
+
+.row { display: flex; gap: 8px; }
+
+.step-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.result-chip {
+  background: #f0efe9;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: #444;
+}

@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+*.sqlite
+*.sqlite-journal
+.DS_Store
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# Local data
+backend/data/
+backend/.env
