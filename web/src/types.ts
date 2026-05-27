@@ -32,6 +32,25 @@ export type RunStep = {
   result_fields: ResultField[];
 };
 
+export type NoteBlock =
+  | { id: string; type: "text"; content: string }
+  | { id: string; type: "step"; title: string; description: string };
+
+export type Note = {
+  id: string;
+  title: string;
+  blocks: NoteBlock[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type NoteSummary = {
+  id: string;
+  title: string;
+  updated_at: string;
+  block_count: number;
+};
+
 export type Run = {
   id: string;
   protocol_id: string;

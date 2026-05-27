@@ -8,9 +8,11 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+import uuid
+
 from . import protocols, runs, schemas
 from .db import Base, engine, get_session
-from .models import Run
+from .models import Note, Run
 
 
 @asynccontextmanager
@@ -144,3 +146,74 @@ def sync(run_id: str, db: Session = Depends(get_session)):
         raise HTTPException(404, "run not found")
     entry_id, web_url = runs.sync_to_benchling(db, run)
     return schemas.SyncResponse(benchling_entry_id=entry_id, web_url=web_url)
+
+
+def _serialize_note(note: Note) -> schemas.NoteOut:
+    return schemas.NoteOut(
+        id=note.id,
+        title=note.title,
+        blocks=note.blocks or [],
+        created_at=note.created_at,
+        updated_at=note.updated_at,
+    )
+
+
+@app.get("/api/notes", response_model=list[schemas.NoteSummary])
+def list_notes(db: Session = Depends(get_session)):
+    rows = db.query(Note).order_by(Note.updated_at.desc()).all()
+    return [
+        schemas.NoteSummary(
+            id=n.id,
+            title=n.title,
+            updated_at=n.updated_at,
+            block_count=len(n.blocks or []),
+        )
+        for n in rows
+    ]
+
+
+@app.post("/api/notes", response_model=schemas.NoteOut)
+def create_note(payload: schemas.CreateNoteIn, db: Session = Depends(get_session)):
+    note = Note(
+        id=f"note_{uuid.uuid4().hex[:12]}",
+        title=payload.title or "Untitled note",
+        blocks=[],
+    )
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    return _serialize_note(note)
+
+
+@app.get("/api/notes/{note_id}", response_model=schemas.NoteOut)
+def get_note(note_id: str, db: Session = Depends(get_session)):
+    note = db.get(Note, note_id)
+    if note is None:
+        raise HTTPException(404, "note not found")
+    return _serialize_note(note)
+
+
+@app.put("/api/notes/{note_id}", response_model=schemas.NoteOut)
+def update_note(
+    note_id: str,
+    payload: schemas.UpdateNoteIn,
+    db: Session = Depends(get_session),
+):
+    note = db.get(Note, note_id)
+    if note is None:
+        raise HTTPException(404, "note not found")
+    if payload.title is not None:
+        note.title = payload.title
+    if payload.blocks is not None:
+        note.blocks = payload.blocks
+    db.commit()
+    db.refresh(note)
+    return _serialize_note(note)
+
+
+@app.delete("/api/notes/{note_id}", status_code=204)
+def delete_note(note_id: str, db: Session = Depends(get_session)):
+    note = db.get(Note, note_id)
+    if note is not None:
+        db.delete(note)
+        db.commit()

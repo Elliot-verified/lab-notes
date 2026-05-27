@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
-import type { Protocol, Run } from "../types";
+import type { NoteSummary, Protocol, Run } from "../types";
 
 export default function HomePage() {
   const [protocols, setProtocols] = useState<Protocol[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
+  const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.listProtocols(), api.listRuns()])
-      .then(([p, r]) => {
+    Promise.all([api.listProtocols(), api.listRuns(), api.listNotes()])
+      .then(([p, r, n]) => {
         setProtocols(p);
         setRuns(r);
+        setNotes(n);
       })
       .catch((e) => setError(String(e)));
   }, []);
@@ -22,6 +24,15 @@ export default function HomePage() {
     try {
       const run = await api.createRun(protocolId);
       navigate(`/runs/${run.id}`);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function newNote() {
+    try {
+      const note = await api.createNote();
+      navigate(`/notes/${note.id}`);
     } catch (e) {
       setError(String(e));
     }
@@ -57,6 +68,30 @@ export default function HomePage() {
               </a>
               <span className="muted">
                 {" "}— {new Date(r.created_at).toLocaleString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <div className="section-head">
+          <h2>Notes</h2>
+          <button onClick={newNote} className="plus" title="New note">+ New note</button>
+        </div>
+        <p className="muted small">
+          Free-form scratch space. Inside a note, press <kbd>/</kbd> to insert
+          a protocol template — each step becomes an editable block you can
+          rename, reorder, or delete.
+        </p>
+        {notes.length === 0 && <p className="muted">No notes yet.</p>}
+        <ul className="run-list">
+          {notes.map((n) => (
+            <li key={n.id}>
+              <a href={`/notes/${n.id}`}>{n.title || "Untitled note"}</a>
+              <span className="muted">
+                {" "}— {n.block_count} block{n.block_count === 1 ? "" : "s"} ·{" "}
+                updated {new Date(n.updated_at).toLocaleString()}
               </span>
             </li>
           ))}

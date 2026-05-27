@@ -50,3 +50,18 @@ class RunStep(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     run: Mapped[Run] = relationship(back_populates="steps")
+
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    title: Mapped[str] = mapped_column(String, default="Untitled note")
+    # Ordered list of blocks. Each block:
+    #   { "id": "<uuid>", "type": "text",  "content": "..." }
+    #   { "id": "<uuid>", "type": "step",  "title": "...", "description": "..." }
+    blocks: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=_utcnow, onupdate=_utcnow
+    )

@@ -67,3 +67,27 @@ class CompleteStepIn(BaseModel):
 class SyncResponse(BaseModel):
     benchling_entry_id: str
     web_url: str | None
+
+
+class NoteOut(BaseModel):
+    id: str
+    title: str
+    blocks: list[dict[str, Any]]
+    created_at: datetime
+    updated_at: datetime
+
+
+class NoteSummary(BaseModel):
+    id: str
+    title: str
+    updated_at: datetime
+    block_count: int
+
+
+class CreateNoteIn(BaseModel):
+    title: str | None = None
+
+
+class UpdateNoteIn(BaseModel):
+    title: str | None = None
+    blocks: list[dict[str, Any]] | None = None

@@ -182,3 +182,174 @@ button.ghost {
   border-radius: 10px;
   color: #444;
 }
+
+/* ── Notes ────────────────────────────────────────────────────────────── */
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.section-head h2 { margin: 24px 0 4px; }
+
+kbd {
+  background: #f0efe9;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+.note-page { max-width: 720px; }
+
+.note-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.note-title {
+  font-size: 22px;
+  font-weight: 600;
+  border: 0;
+  background: transparent;
+  flex: 1;
+  padding: 4px 0;
+  color: var(--fg);
+}
+.note-title:focus { outline: none; }
+
+.note-meta { display: flex; align-items: center; gap: 12px; }
+
+.note-hint { margin: 0 0 12px; }
+
+.blocks { display: flex; flex-direction: column; gap: 6px; }
+
+.block {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 6px;
+  border-radius: 6px;
+}
+.block:hover { background: rgba(0, 0, 0, 0.02); }
+
+.block-gutter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.block:hover .block-gutter { opacity: 1; }
+
+.icon {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.icon:hover { background: var(--border); color: var(--fg); }
+.icon-danger:hover { background: #fde2e2; color: var(--error); }
+.icon:disabled { opacity: 0.3; cursor: default; }
+
+.block-body { flex: 1; }
+
+.block-body textarea,
+.block-body input {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  resize: vertical;
+}
+.block-body textarea:focus,
+.block-body input:focus {
+  outline: none;
+  background: white;
+  border-color: var(--border);
+}
+
+.block-text textarea { min-height: 32px; }
+
+.step-block {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px;
+}
+.step-block-title {
+  font-weight: 500;
+}
+.step-block textarea {
+  font-size: 13px;
+  color: #444;
+  margin-top: 2px;
+}
+
+.block-add-row { display: flex; gap: 8px; margin-top: 12px; }
+.block-add { margin-top: 8px; }
+
+/* ── Slash popover ───────────────────────────────────────────────────── */
+
+.slash-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+
+.slash-popover {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  width: 440px;
+  max-width: 90vw;
+  padding: 8px;
+}
+
+.slash-popover input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 6px;
+  font: inherit;
+}
+.slash-popover input:focus { outline: none; }
+
+.slash-list {
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.slash-list li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.slash-list li.active { background: #e8f0fc; }
+.slash-name { font-weight: 500; }
+.slash-hint { padding: 4px 8px 2px; border-top: 1px solid var(--border); }
+
+.small { font-size: 12px; }
+.ghost.small { padding: 3px 8px; font-size: 12px; }

@@ -1,4 +1,4 @@
-import type { Protocol, Run } from "./types";
+import type { Note, NoteBlock, NoteSummary, Protocol, Run } from "./types";
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -35,4 +35,18 @@ export const api = {
       `/api/runs/${runId}/sync`,
       { method: "POST" }
     ),
+
+  listNotes: () => req<NoteSummary[]>("/api/notes"),
+  createNote: (title?: string) =>
+    req<Note>("/api/notes", { method: "POST", body: JSON.stringify({ title }) }),
+  getNote: (id: string) => req<Note>(`/api/notes/${id}`),
+  updateNote: (id: string, payload: { title?: string; blocks?: NoteBlock[] }) =>
+    req<Note>(`/api/notes/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  deleteNote: (id: string) =>
+    fetch(`/api/notes/${id}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok) throw new Error(`delete failed: ${r.status}`);
+    }),
 };
