@@ -353,3 +353,94 @@ kbd {
 
 .small { font-size: 12px; }
 .ghost.small { padding: 3px 8px; font-size: 12px; }
+
+/* ── Note editor — two-column layout ─────────────────────────────────── */
+
+.note-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .note-layout { grid-template-columns: 1fr; }
+}
+
+.template-sidebar {
+  position: sticky;
+  top: 24px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.sidebar-head {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.sidebar-hint { margin: 0 0 10px; }
+
+.sidebar-list { display: flex; flex-direction: column; gap: 6px; }
+
+.template-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.1s, transform 0.05s;
+}
+.template-card:hover { border-color: var(--accent); }
+.template-card:active { cursor: grabbing; }
+.template-card.dragging { opacity: 0.35; }
+
+/* ── Drag affordances ───────────────────────────────────────────────── */
+
+.grip {
+  cursor: grab;
+  font-size: 10px;
+  letter-spacing: -1px;
+}
+.grip:active { cursor: grabbing; }
+
+.drag-ghost {
+  background: white;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  max-width: 320px;
+}
+.block-ghost { font-weight: 500; }
+
+.drop-indicator {
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 4px 0 -1px 0;
+}
+
+.empty-drop {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.1s, background 0.1s;
+}
+.empty-drop.active { border-color: var(--accent); }
+.empty-drop.over {
+  border-color: var(--accent);
+  background: rgba(45, 108, 223, 0.05);
+}
+
+.block.is-dragging { background: rgba(45, 108, 223, 0.04); }
