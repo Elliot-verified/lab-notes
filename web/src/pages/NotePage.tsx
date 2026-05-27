@@ -38,7 +38,12 @@ function blocksFromProtocol(p: Protocol): NoteBlock[] {
     type: "step" as const,
     title: s.title,
     description: s.description ?? "",
+    status: "pending" as const,
   }));
+}
+
+function isStepBlock(b: NoteBlock): b is Extract<NoteBlock, { type: "step" }> {
+  return b.type === "step";
 }
 
 export default function NotePage() {
@@ -297,8 +302,11 @@ export default function NotePage() {
 
           {error && <div className="error">{error}</div>}
 
+          <NoteProgress blocks={note.blocks} />
+
           <p className="muted small note-hint">
             Drag templates from the sidebar, or press <kbd>/</kbd> in an empty block.
+            Click the checkbox on a step to mark it done.
           </p>
 
           <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
@@ -397,6 +405,25 @@ export default function NotePage() {
   );
 }
 
+function NoteProgress({ blocks }: { blocks: NoteBlock[] }) {
+  const steps = blocks.filter(isStepBlock);
+  if (steps.length === 0) return null;
+  const done = steps.filter((s) => (s.status ?? "pending") === "done").length;
+  const pct = Math.round((done / steps.length) * 100);
+  const allDone = done === steps.length;
+  return (
+    <div className={`progress-row ${allDone ? "all-done" : ""}`}>
+      <div className="progress-bar">
+        <div className="progress-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="progress-text small">
+        {done} of {steps.length} step{steps.length === 1 ? "" : "s"} done
+        {allDone && " · ✓"}
+      </div>
+    </div>
+  );
+}
+
 function TemplateCard({ protocol }: { protocol: Protocol }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: TPL_PREFIX + protocol.id,
@@ -478,12 +505,17 @@ function SortableBlock({
   };
 
   const showDropIndicator = externalDragActive && overId === sortableId;
+  const stepStatus =
+    block.type === "step" ? block.status ?? "pending" : undefined;
+  const isDone = stepStatus === "done";
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`block block-${block.type} ${isDragging ? "is-dragging" : ""}`}
+      className={`block block-${block.type} ${isDragging ? "is-dragging" : ""} ${
+        isDone ? "is-done" : ""
+      }`}
     >
       <div className="block-gutter">
         <button
@@ -523,12 +555,23 @@ function SortableBlock({
           />
         ) : (
           <div className="step-block">
-            <input
-              className="step-block-title"
-              value={block.title}
-              onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Step title"
-            />
+            <div className="step-row">
+              <input
+                type="checkbox"
+                className="step-check"
+                checked={isDone}
+                onChange={(e) =>
+                  onChange({ status: e.target.checked ? "done" : "pending" })
+                }
+                title={isDone ? "Mark as not done" : "Mark as done"}
+              />
+              <input
+                className="step-block-title"
+                value={block.title}
+                onChange={(e) => onChange({ title: e.target.value })}
+                placeholder="Step title"
+              />
+            </div>
             <textarea
               value={block.description}
               placeholder="Step description (optional)"

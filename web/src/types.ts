@@ -32,9 +32,17 @@ export type RunStep = {
   result_fields: ResultField[];
 };
 
+export type StepStatus = "pending" | "done";
+
 export type NoteBlock =
   | { id: string; type: "text"; content: string }
-  | { id: string; type: "step"; title: string; description: string };
+  | {
+      id: string;
+      type: "step";
+      title: string;
+      description: string;
+      status?: StepStatus; // defaults to "pending" if omitted
+    };
 
 export type Note = {
   id: string;

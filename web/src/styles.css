@@ -266,15 +266,17 @@ kbd {
 
 .block-body { flex: 1; }
 
+.block-body textarea {
+  width: 100%;
+  resize: vertical;
+}
 .block-body textarea,
 .block-body input {
-  width: 100%;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 6px;
   padding: 6px 8px;
   font: inherit;
-  resize: vertical;
 }
 .block-body textarea:focus,
 .block-body input:focus {
@@ -293,6 +295,8 @@ kbd {
 }
 .step-block-title {
   font-weight: 500;
+  flex: 1;
+  min-width: 0;
 }
 .step-block textarea {
   font-size: 13px;
@@ -444,3 +448,52 @@ kbd {
 }
 
 .block.is-dragging { background: rgba(45, 108, 223, 0.04); }
+
+/* ── Step todo state ────────────────────────────────────────────────── */
+
+.step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-check {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--done);
+}
+
+.block.is-done .step-block { background: #f4faf6; }
+.block.is-done .step-block-title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.block.is-done .step-block textarea { color: var(--muted); }
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 4px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--done);
+  transition: width 0.2s ease;
+}
+
+.progress-text { color: var(--muted); white-space: nowrap; }
+
+.progress-row.all-done .progress-text { color: var(--done); font-weight: 500; }
