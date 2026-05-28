@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   DndContext,
   DragEndEvent,
@@ -42,9 +42,6 @@ function blocksFromProtocol(p: Protocol): NoteBlock[] {
   }));
 }
 
-function isStepBlock(b: NoteBlock): b is Extract<NoteBlock, { type: "step" }> {
-  return b.type === "step";
-}
 
 export default function NotePage() {
   const { noteId } = useParams<{ noteId: string }>();
@@ -63,6 +60,7 @@ export default function NotePage() {
   const [overId, setOverId] = useState<string | null>(null);
 
   const saveTimer = useRef<number | null>(null);
+  const pendingPayload = useRef<Note | null>(null);
 
   useEffect(() => {
     if (!noteId) return;
@@ -74,19 +72,58 @@ export default function NotePage() {
       .catch((e) => setError(String(e)));
   }, [noteId]);
 
-  const queueSave = useCallback((next: Note) => {
-    setSaveState("saving");
-    if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(async () => {
-      try {
-        await api.updateNote(next.id, { title: next.title, blocks: next.blocks });
-        setSaveState("saved");
-      } catch (e) {
-        setError(String(e));
-        setSaveState("idle");
-      }
-    }, 500);
+  const flushSave = useCallback(async () => {
+    if (saveTimer.current !== null) {
+      window.clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    const next = pendingPayload.current;
+    if (!next) return;
+    pendingPayload.current = null;
+    try {
+      await api.updateNote(next.id, { title: next.title, blocks: next.blocks });
+      setSaveState("saved");
+    } catch (e) {
+      setError(String(e));
+      setSaveState("idle");
+    }
   }, []);
+
+  const queueSave = useCallback(
+    (next: Note) => {
+      setSaveState("saving");
+      pendingPayload.current = next;
+      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+      saveTimer.current = window.setTimeout(() => {
+        flushSave();
+      }, 500);
+    },
+    [flushSave]
+  );
+
+  // Flush on unmount and on tab hide / navigation, so notes don't lose data
+  // when the user clicks away during the debounce window.
+  useEffect(() => {
+    const onHide = () => {
+      if (pendingPayload.current) {
+        const next = pendingPayload.current;
+        // keepalive lets the request complete even after the page unloads.
+        fetch(`/api/notes/${next.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: next.title, blocks: next.blocks }),
+          keepalive: true,
+        }).catch(() => {});
+        pendingPayload.current = null;
+      }
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      // On normal unmount (route change), flush via the real API.
+      flushSave();
+    };
+  }, [flushSave]);
 
   function patchNote(mutate: (n: Note) => Note) {
     setNote((prev) => {
@@ -122,7 +159,10 @@ export default function NotePage() {
   function appendTextBlock() {
     patchNote((n) => ({
       ...n,
-      blocks: [...n.blocks, { id: newId(), type: "text", content: "" }],
+      blocks: [
+        ...n.blocks,
+        { id: newId(), type: "text", content: "", status: "pending" },
+      ],
     }));
   }
 
@@ -284,6 +324,9 @@ export default function NotePage() {
         </aside>
 
         <div className="note-main">
+          <div className="note-back">
+            <Link to="/" className="back-link">← All notes</Link>
+          </div>
           <div className="note-header">
             <input
               className="note-title"
@@ -406,18 +449,19 @@ export default function NotePage() {
 }
 
 function NoteProgress({ blocks }: { blocks: NoteBlock[] }) {
-  const steps = blocks.filter(isStepBlock);
-  if (steps.length === 0) return null;
-  const done = steps.filter((s) => (s.status ?? "pending") === "done").length;
-  const pct = Math.round((done / steps.length) * 100);
-  const allDone = done === steps.length;
+  // Count any block that carries a status (every newly created block does).
+  const checkable = blocks.filter((b) => b.status !== undefined);
+  if (checkable.length === 0) return null;
+  const done = checkable.filter((b) => b.status === "done").length;
+  const pct = Math.round((done / checkable.length) * 100);
+  const allDone = done === checkable.length;
   return (
     <div className={`progress-row ${allDone ? "all-done" : ""}`}>
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="progress-text small">
-        {done} of {steps.length} step{steps.length === 1 ? "" : "s"} done
+        {done} of {checkable.length} item{checkable.length === 1 ? "" : "s"} done
         {allDone && " · ✓"}
       </div>
     </div>
@@ -505,9 +549,8 @@ function SortableBlock({
   };
 
   const showDropIndicator = externalDragActive && overId === sortableId;
-  const stepStatus =
-    block.type === "step" ? block.status ?? "pending" : undefined;
-  const isDone = stepStatus === "done";
+  const status = block.status ?? "pending";
+  const isDone = status === "done";
 
   return (
     <div
@@ -546,13 +589,24 @@ function SortableBlock({
 
       <div className="block-body">
         {block.type === "text" ? (
-          <textarea
-            value={block.content}
-            placeholder="Write something… (press / for templates)"
-            onChange={(e) => onChange({ content: e.target.value })}
-            onKeyDown={onKeyDown}
-            rows={Math.max(2, block.content.split("\n").length + 1)}
-          />
+          <div className="text-row">
+            <input
+              type="checkbox"
+              className="step-check"
+              checked={isDone}
+              onChange={(e) =>
+                onChange({ status: e.target.checked ? "done" : "pending" })
+              }
+              title={isDone ? "Mark as not done" : "Mark as done"}
+            />
+            <textarea
+              value={block.content}
+              placeholder="Write something… (press / for templates)"
+              onChange={(e) => onChange({ content: e.target.value })}
+              onKeyDown={onKeyDown}
+              rows={Math.max(2, block.content.split("\n").length + 1)}
+            />
+          </div>
         ) : (
           <div className="step-block">
             <div className="step-row">

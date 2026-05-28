@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import type { Health } from "../api";
 import type { NoteSummary, Protocol, Run } from "../types";
 
 export default function HomePage() {
   const [protocols, setProtocols] = useState<Protocol[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [notes, setNotes] = useState<NoteSummary[]>([]);
+  const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.listProtocols(), api.listRuns(), api.listNotes()])
-      .then(([p, r, n]) => {
+    Promise.all([api.listProtocols(), api.listRuns(), api.listNotes(), api.health()])
+      .then(([p, r, n, h]) => {
         setProtocols(p);
         setRuns(r);
         setNotes(n);
+        setHealth(h);
       })
       .catch((e) => setError(String(e)));
   }, []);
@@ -79,6 +82,11 @@ export default function HomePage() {
           <h2>Notes</h2>
           <button onClick={newNote} className="plus" title="New note">+ New note</button>
         </div>
+        {health && !health.persistent && (
+          <div className="warn small">
+            ⚠ Storage is ephemeral ({health.db_backend}). {health.note}
+          </div>
+        )}
         <p className="muted small">
           Free-form scratch space. Inside a note, press <kbd>/</kbd> to insert
           a protocol template — each step becomes an editable block you can

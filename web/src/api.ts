@@ -12,7 +12,10 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+export type Health = { db_backend: string; persistent: boolean; note: string };
+
 export const api = {
+  health: () => req<Health>("/api/health"),
   listProtocols: () => req<Protocol[]>("/api/protocols"),
   listRuns: () => req<Run[]>("/api/runs"),
   createRun: (protocol_id: string, name?: string) =>

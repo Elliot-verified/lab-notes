@@ -86,6 +86,14 @@ button.ghost {
   border-radius: 6px;
   margin: 12px 0;
 }
+.warn {
+  background: #fff8e6;
+  border: 1px solid #f0d68c;
+  color: #8a5a00;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
 
 .run-list { list-style: none; padding: 0; }
 .run-list li { padding: 6px 0; border-bottom: 1px solid var(--border); }
@@ -204,6 +212,14 @@ kbd {
 }
 
 .note-page { max-width: 720px; }
+
+.note-back { margin-bottom: 8px; }
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+.back-link:hover { color: var(--accent); }
 
 .note-header {
   display: flex;
@@ -455,6 +471,18 @@ kbd {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.text-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.text-row .step-check { margin-top: 9px; }
+.text-row textarea { flex: 1; min-width: 0; }
+.block.is-done .text-row textarea {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 .step-check {

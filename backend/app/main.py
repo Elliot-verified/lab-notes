@@ -69,6 +69,22 @@ def _serialize_run(run: Run) -> schemas.RunOut:
     )
 
 
+@app.get("/api/health")
+def health():
+    """Diagnostic: which database engine notes/runs are actually being saved to."""
+    backend_name = engine.url.get_backend_name()
+    persistent = backend_name != "sqlite"
+    return {
+        "db_backend": backend_name,
+        "persistent": persistent,
+        "note": (
+            "Postgres / hosted DB — notes persist across deploys."
+            if persistent
+            else "SQLite — fine for local dev, will not persist on Vercel cold starts. Connect a hosted Postgres."
+        ),
+    }
+
+
 @app.get("/api/protocols", response_model=list[schemas.ProtocolOut])
 def list_protocols():
     out = []

@@ -35,7 +35,12 @@ export type RunStep = {
 export type StepStatus = "pending" | "done";
 
 export type NoteBlock =
-  | { id: string; type: "text"; content: string }
+  | {
+      id: string;
+      type: "text";
+      content: string;
+      status?: StepStatus;
+    }
   | {
       id: string;
       type: "step";
