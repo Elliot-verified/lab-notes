@@ -9,10 +9,12 @@ description: |
 steps:
   - id: thaw_reagents
     title: Thaw primers, dNTPs, buffer, and template on ice
+    duration: 10 min
     description: Vortex briefly and quick-spin. Keep polymerase at −20 °C until needed.
 
   - id: master_mix
     title: Assemble master mix on ice
+    duration: 15 min
     description: |
       Per 25 µL reaction:
         12.5 µL 2× polymerase master mix
@@ -27,10 +29,12 @@ steps:
 
   - id: aliquot
     title: Aliquot master mix + template into PCR strip
+    duration: 5 min
     description: Cap tightly, quick-spin.
 
   - id: thermocycle
     title: Run thermocycler programme
+    duration: ~1.5–2 h
     description: |
       Suggested:
         98 °C for 30 s
@@ -45,6 +49,7 @@ steps:
 
   - id: gel_check
     title: Run 5 µL on a 1% agarose gel with ladder
+    duration: 45 min
     results:
       - name: band_present
         type: boolean
@@ -74,6 +79,7 @@ steps:
 
   - id: pcr_cleanup
     title: Clean up reaction (spin column or SPRI beads)
+    duration: 20 min
     results:
       - name: yield_ng_ul
         type: number

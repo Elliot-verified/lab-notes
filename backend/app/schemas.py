@@ -17,6 +17,7 @@ class StepOut(BaseModel):
     id: str
     title: str
     description: str = ""
+    duration: str | None = None
     results: list[ResultFieldOut] = []
 
 
@@ -38,6 +39,7 @@ class RunStepOut(BaseModel):
     # Hydrated from protocol definition for the client.
     title: str
     description: str = ""
+    duration: str | None = None
     result_fields: list[ResultFieldOut] = []
 
 

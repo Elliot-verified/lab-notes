@@ -99,6 +99,28 @@ button.ghost {
 .run-list li { padding: 6px 0; border-bottom: 1px solid var(--border); }
 .run-list a { color: var(--fg); text-decoration: none; font-weight: 500; }
 
+.note-index { list-style: none; padding: 0; margin: 0; }
+.note-index li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.note-index-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-decoration: none;
+  color: var(--fg);
+  min-width: 0;
+}
+.note-index-title { font-weight: 500; }
+.note-index-link:hover .note-index-title { color: var(--accent); }
+.note-delete { opacity: 0; flex-shrink: 0; }
+.note-index li:hover .note-delete { opacity: 1; }
+
 .status {
   display: inline-block;
   padding: 1px 8px;
@@ -146,6 +168,15 @@ button.ghost {
 }
 
 .step-title { font-weight: 500; }
+
+.duration-chip {
+  font-size: 11px;
+  color: var(--muted);
+  background: #f0efe9;
+  padding: 1px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
 
 .step-desc { margin: 6px 0; color: #444; white-space: pre-wrap; font-size: 13px; }
 
@@ -479,6 +510,28 @@ kbd {
   gap: 8px;
 }
 .text-row .step-check { margin-top: 9px; }
+
+/* Per-step approximate-time field inside note step blocks */
+.duration-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.block-body input.duration-input {
+  width: 72px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px;
+  border: 1px solid transparent;
+}
+.block-body input.duration-input:focus {
+  background: white;
+  border-color: var(--border);
+  color: var(--fg);
+}
 .text-row textarea { flex: 1; min-width: 0; }
 .block.is-done .text-row textarea {
   text-decoration: line-through;

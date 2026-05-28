@@ -107,6 +107,7 @@ function StepRow({
       <div className="step-header">
         <span className={`pill pill-${step.status}`}>{step.status}</span>
         <span className="step-title">{step.title}</span>
+        {step.duration && <span className="duration-chip">⏱ {step.duration}</span>}
       </div>
       {step.description && <p className="step-desc">{step.description}</p>}
 

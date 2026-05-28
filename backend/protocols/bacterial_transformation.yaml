@@ -8,10 +8,12 @@ description: |
 steps:
   - id: thaw_cells
     title: Thaw competent cells on ice
+    duration: 10 min
     description: 10 minutes on ice, do not vortex.
 
   - id: add_dna
     title: Add 1–5 µL plasmid DNA
+    duration: 5 min
     description: Mix by flicking, keep on ice.
     results:
       - name: dna_ng
@@ -21,19 +23,24 @@ steps:
 
   - id: incubate_ice
     title: Incubate on ice for 30 min
+    duration: 30 min
 
   - id: heat_shock
     title: Heat shock at 42 °C for 45 s
+    duration: 45 s
 
   - id: recover
     title: Recover in SOC at 37 °C, 1 hr, shaking
+    duration: 1 h
 
   - id: plate
     title: Plate 100 µL on selective media
+    duration: 10 min + overnight
     description: Incubate overnight at 37 °C.
 
   - id: count_colonies
     title: Count colonies the next morning
+    duration: 15 min
     results:
       - name: colony_count
         type: number
@@ -60,6 +67,7 @@ steps:
 
   - id: pick_colonies
     title: Pick 3–5 isolated colonies into overnight cultures
+    duration: 15 min + overnight
 
 step_library:
   - id: troubleshoot_no_colonies

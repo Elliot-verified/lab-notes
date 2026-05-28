@@ -9,6 +9,7 @@ description: |
 steps:
   - id: harvest
     title: Pellet 1–5 mL overnight culture
+    duration: 5 min
     description: 13,000 × g for 1 min, decant supernatant fully.
     results:
       - name: culture_ml
@@ -17,30 +18,37 @@ steps:
 
   - id: resuspend_p1
     title: Resuspend pellet in 250 µL P1 (with RNase A)
+    duration: 3 min
     description: Vortex until no clumps remain. Buffer must be at room temperature.
 
   - id: lyse_p2
     title: Add 250 µL P2, invert 4–6× to mix
+    duration: 5 min
     description: |
       Solution turns clear and viscous. Do not vortex. Proceed within 5 min.
 
   - id: neutralize_p3
     title: Add 350 µL N3, invert 4–6× until fully mixed
+    duration: 2 min
     description: White flocculent precipitate forms.
 
   - id: spin_lysate
     title: Spin 10 min at 13,000 × g, transfer cleared lysate to column
+    duration: 12 min
     description: Pipette gently from the top; avoid the pellet.
 
   - id: bind
     title: Spin column 30 s, discard flow-through
+    duration: 2 min
 
   - id: wash_pe
     title: Wash with 750 µL PE, spin 30 s, discard flow-through
+    duration: 3 min
     description: Then spin empty 1 min to remove residual ethanol.
 
   - id: elute
     title: Elute in 30–50 µL EB or water
+    duration: 3 min
     description: |
       Let elution buffer sit on the membrane for 1 min before the final spin.
     results:
@@ -50,6 +58,7 @@ steps:
 
   - id: quantify
     title: Quantify on Nanodrop (or Qubit dsDNA HS)
+    duration: 5 min
     results:
       - name: concentration_ng_ul
         type: number

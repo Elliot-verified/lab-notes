@@ -9,6 +9,7 @@ export type Step = {
   id: string;
   title: string;
   description?: string;
+  duration?: string | null;
   results?: ResultField[];
 };
 
@@ -29,6 +30,7 @@ export type RunStep = {
   completed_at: string | null;
   title: string;
   description: string;
+  duration?: string | null;
   result_fields: ResultField[];
 };
 
@@ -46,6 +48,7 @@ export type NoteBlock =
       type: "step";
       title: string;
       description: string;
+      duration?: string | null;
       status?: StepStatus; // defaults to "pending" if omitted
     };
 

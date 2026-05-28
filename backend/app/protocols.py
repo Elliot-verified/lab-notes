@@ -27,6 +27,7 @@ class Step:
     id: str
     title: str
     description: str = ""
+    duration: str | None = None  # approximate time, e.g. "30 min", "overnight"
     results: list[ResultField] = field(default_factory=list)
     rules: list[dict[str, Any]] = field(default_factory=list)
 
@@ -51,6 +52,7 @@ def _parse_step(raw: dict[str, Any]) -> Step:
         id=raw["id"],
         title=raw["title"],
         description=raw.get("description", ""),
+        duration=raw.get("duration"),
         results=[ResultField(**r) for r in raw.get("results", [])],
         rules=list(raw.get("rules", [])),
     )

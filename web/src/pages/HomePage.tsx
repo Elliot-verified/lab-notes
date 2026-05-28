@@ -41,9 +41,54 @@ export default function HomePage() {
     }
   }
 
+  async function deleteNote(id: string, title: string) {
+    if (!confirm(`Delete "${title || "Untitled note"}"?`)) return;
+    try {
+      await api.deleteNote(id);
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   return (
     <div>
       {error && <div className="error">{error}</div>}
+
+      <section>
+        <div className="section-head">
+          <h2>Notes</h2>
+          <button onClick={newNote} className="plus" title="New note">+ New note</button>
+        </div>
+        {health && !health.persistent && (
+          <div className="warn small">
+            ⚠ Storage is ephemeral ({health.db_backend}). {health.note}
+          </div>
+        )}
+        <p className="muted small">
+          Free-form scratch space. Inside a note, press <kbd>/</kbd> or drag a
+          template in — each step becomes an editable, checkable block.
+        </p>
+        {notes.length === 0 && <p className="muted">No notes yet.</p>}
+        <ul className="note-index">
+          {notes.map((n) => (
+            <li key={n.id}>
+              <a href={`/notes/${n.id}`} className="note-index-link">
+                <span className="note-index-title">{n.title || "Untitled note"}</span>
+                <span className="muted small">
+                  {n.block_count} block{n.block_count === 1 ? "" : "s"} ·{" "}
+                  updated {new Date(n.updated_at).toLocaleString()}
+                </span>
+              </a>
+              <button
+                className="icon icon-danger note-delete"
+                title="Delete note"
+                onClick={() => deleteNote(n.id, n.title)}
+              >×</button>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section>
         <h2>Protocols</h2>
@@ -71,35 +116,6 @@ export default function HomePage() {
               </a>
               <span className="muted">
                 {" "}— {new Date(r.created_at).toLocaleString()}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <div className="section-head">
-          <h2>Notes</h2>
-          <button onClick={newNote} className="plus" title="New note">+ New note</button>
-        </div>
-        {health && !health.persistent && (
-          <div className="warn small">
-            ⚠ Storage is ephemeral ({health.db_backend}). {health.note}
-          </div>
-        )}
-        <p className="muted small">
-          Free-form scratch space. Inside a note, press <kbd>/</kbd> to insert
-          a protocol template — each step becomes an editable block you can
-          rename, reorder, or delete.
-        </p>
-        {notes.length === 0 && <p className="muted">No notes yet.</p>}
-        <ul className="run-list">
-          {notes.map((n) => (
-            <li key={n.id}>
-              <a href={`/notes/${n.id}`}>{n.title || "Untitled note"}</a>
-              <span className="muted">
-                {" "}— {n.block_count} block{n.block_count === 1 ? "" : "s"} ·{" "}
-                updated {new Date(n.updated_at).toLocaleString()}
               </span>
             </li>
           ))}

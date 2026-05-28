@@ -9,6 +9,7 @@ description: |
 steps:
   - id: check_confluency
     title: Inspect dish under microscope; estimate confluency
+    duration: 5 min
     results:
       - name: confluency_pct
         type: number
@@ -25,26 +26,33 @@ steps:
 
   - id: warm_media
     title: Pre-warm DMEM + 10% FBS + Pen/Strep, PBS, and trypsin at 37 °C
+    duration: 20 min
 
   - id: aspirate_media
     title: Aspirate spent media
+    duration: 2 min
 
   - id: pbs_wash
     title: Wash monolayer with 5 mL PBS, aspirate
+    duration: 3 min
 
   - id: trypsinize
     title: Add 1 mL 0.25% trypsin-EDTA, incubate at 37 °C for 3–5 min
+    duration: 5 min
     description: Tap dish; confirm detachment under microscope.
 
   - id: quench
     title: Add 4 mL pre-warmed complete media to neutralize trypsin
+    duration: 3 min
     description: Pipette up and down to break up clumps; transfer to a 15 mL tube.
 
   - id: spin_resuspend
     title: Spin 200 × g for 5 min, aspirate supernatant, resuspend in 5 mL media
+    duration: 8 min
 
   - id: count
     title: Count cells (hemocytometer or automated counter)
+    duration: 5 min
     results:
       - name: cells_per_ml
         type: number
@@ -60,6 +68,7 @@ steps:
 
   - id: reseed
     title: Seed into a new T75 at desired density
+    duration: 5 min
     description: |
       Typical: 1–2 × 10⁶ cells in 12 mL complete media for a 3-day passage.
       Adjust based on growth rate of the line.
@@ -73,6 +82,7 @@ steps:
 
   - id: incubate
     title: Return to 37 °C / 5% CO₂ incubator
+    duration: 2 min
 
 step_library:
   - id: too_sparse_recheck_tomorrow

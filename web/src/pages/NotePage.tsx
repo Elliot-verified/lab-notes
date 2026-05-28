@@ -38,6 +38,7 @@ function blocksFromProtocol(p: Protocol): NoteBlock[] {
     type: "step" as const,
     title: s.title,
     description: s.description ?? "",
+    duration: s.duration ?? null,
     status: "pending" as const,
   }));
 }
@@ -144,16 +145,6 @@ export default function NotePage() {
 
   function removeBlock(idx: number) {
     patchNote((n) => ({ ...n, blocks: n.blocks.filter((_, i) => i !== idx) }));
-  }
-
-  function moveBlock(idx: number, delta: number) {
-    patchNote((n) => {
-      const target = idx + delta;
-      if (target < 0 || target >= n.blocks.length) return n;
-      const blocks = n.blocks.slice();
-      [blocks[idx], blocks[target]] = [blocks[target], blocks[idx]];
-      return { ...n, blocks };
-    });
   }
 
   function appendTextBlock() {
@@ -362,13 +353,10 @@ export default function NotePage() {
                 <SortableBlock
                   key={block.id}
                   block={block}
-                  index={idx}
-                  total={note.blocks.length}
                   overId={overId}
                   externalDragActive={activeDragId?.startsWith(TPL_PREFIX) ?? false}
                   onChange={(patch) => updateBlock(idx, patch)}
                   onRemove={() => removeBlock(idx)}
-                  onMove={(delta) => moveBlock(idx, delta)}
                   onKeyDown={(e) => handleBlockKeyDown(e, idx)}
                 />
               ))}
@@ -510,23 +498,17 @@ function EmptyDropZone({
 
 function SortableBlock({
   block,
-  index,
-  total,
   overId,
   externalDragActive,
   onChange,
   onRemove,
-  onMove,
   onKeyDown,
 }: {
   block: NoteBlock;
-  index: number;
-  total: number;
   overId: string | null;
   externalDragActive: boolean;
   onChange: (patch: Partial<NoteBlock>) => void;
   onRemove: () => void;
-  onMove: (delta: number) => void;
   onKeyDown: (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => void;
@@ -568,18 +550,6 @@ function SortableBlock({
           {...listeners}
           {...attributes}
         >⋮⋮</button>
-        <button
-          className="icon"
-          title="Move up"
-          onClick={() => onMove(-1)}
-          disabled={index === 0}
-        >↑</button>
-        <button
-          className="icon"
-          title="Move down"
-          onClick={() => onMove(1)}
-          disabled={index === total - 1}
-        >↓</button>
         <button
           className="icon icon-danger"
           title="Delete block"
@@ -625,6 +595,15 @@ function SortableBlock({
                 onChange={(e) => onChange({ title: e.target.value })}
                 placeholder="Step title"
               />
+              <span className="duration-field">
+                ⏱
+                <input
+                  className="duration-input"
+                  value={block.type === "step" ? block.duration ?? "" : ""}
+                  onChange={(e) => onChange({ duration: e.target.value })}
+                  placeholder="time"
+                />
+              </span>
             </div>
             <textarea
               value={block.description}

@@ -50,6 +50,7 @@ def _serialize_run(run: Run) -> schemas.RunOut:
                 completed_at=s.completed_at,
                 title=defn.title if defn else s.step_id,
                 description=defn.description if defn else "",
+                duration=defn.duration if defn else None,
                 result_fields=[
                     schemas.ResultFieldOut(**asdict(rf))
                     for rf in (defn.results if defn else [])
@@ -100,6 +101,7 @@ def list_protocols():
                         id=s.id,
                         title=s.title,
                         description=s.description,
+                        duration=s.duration,
                         results=[
                             schemas.ResultFieldOut(**asdict(rf)) for rf in s.results
                         ],
