@@ -5,8 +5,6 @@ import {
   Beaker,
   Check,
   FileText,
-  FlaskConical,
-  History,
   Pencil,
   Plus,
   Trash2,
@@ -14,7 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "../api";
 import type { Health } from "../api";
-import type { NoteSummary, Protocol, Run } from "../types";
+import type { NoteBlock, NoteSummary, Protocol } from "../types";
 
 type NoteStatus = "draft" | "in_progress" | "complete";
 
@@ -24,15 +22,19 @@ function noteStatus(n: NoteSummary): NoteStatus {
   return "in_progress";
 }
 
-const STATUS_PILL: Record<NoteStatus | Run["status"], { label: string; cls: string }> = {
+const STATUS_PILL: Record<NoteStatus, { label: string; cls: string }> = {
   draft:       { label: "draft",        cls: "pill-pending" },
   in_progress: { label: "in progress",  cls: "pill-active" },
   complete:    { label: "complete",     cls: "pill-done" },
 };
 
+const newId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+
 export default function HomePage() {
   const [protocols, setProtocols] = useState<Protocol[]>([]);
-  const [runs, setRuns] = useState<Run[]>([]);
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,26 +43,34 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.listProtocols(), api.listRuns(), api.listNotes(), api.health()])
-      .then(([p, r, n, h]) => {
+    Promise.all([api.listProtocols(), api.listNotes(), api.health()])
+      .then(([p, n, h]) => {
         setProtocols(p);
-        setRuns(r);
         setNotes(n);
         setHealth(h);
       })
       .catch((e) => setError(String(e)));
   }, []);
 
-  async function start(protocolId: string) {
-    try {
-      const run = await api.createRun(protocolId);
-      navigate(`/runs/${run.id}`);
-    } catch (e) { setError(String(e)); }
-  }
-
   async function newNote() {
     try {
       const note = await api.createNote();
+      navigate(`/notes/${note.id}`);
+    } catch (e) { setError(String(e)); }
+  }
+
+  async function newNoteFromTemplate(p: Protocol) {
+    try {
+      const note = await api.createNote(p.name);
+      const blocks: NoteBlock[] = p.steps.map((s) => ({
+        id: newId(),
+        type: "step" as const,
+        title: s.title,
+        description: s.description ?? "",
+        duration: s.duration ?? null,
+        status: "pending" as const,
+      }));
+      await api.updateNote(note.id, { blocks });
       navigate(`/notes/${note.id}`);
     } catch (e) { setError(String(e)); }
   }
@@ -83,7 +93,6 @@ export default function HomePage() {
     setEditingId(null);
     const original = notes.find((n) => n.id === id);
     if (!original || original.title === next) return;
-    // optimistic update
     setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, title: next } : n)));
     try {
       await api.updateNote(id, { title: next });
@@ -199,11 +208,12 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ── Protocols ────────────────────────────────────────── */}
+      {/* ── Protocols (template browser) ────────────────────── */}
       <section>
-        <div className="section-head"><h2>Protocols</h2></div>
+        <div className="section-head"><h2>Templates</h2></div>
         <p className="section-intro">
-          Start a run — the checklist adapts as you enter results.
+          Start a new note pre-filled with these steps — then edit, reorder,
+          and check off as you go.
         </p>
         <div className="card-grid">
           {protocols.map((p) => (
@@ -218,46 +228,12 @@ export default function HomePage() {
                 <span>{p.steps.length} steps</span>
               </div>
               <p className="protocol-card-desc">{p.description}</p>
-              <button className="primary" onClick={() => start(p.id)}>
-                <FlaskConical size={14} /> Start run
+              <button className="primary" onClick={() => newNoteFromTemplate(p)}>
+                <Plus size={14} /> New note from template
               </button>
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ── Recent runs ──────────────────────────────────────── */}
-      <section>
-        <div className="section-head"><h2>Recent runs</h2></div>
-        {runs.length === 0 ? (
-          <div className="empty-state">
-            <History size={28} />
-            <h3>No runs yet</h3>
-            <p className="small">Start a protocol above to see it here.</p>
-          </div>
-        ) : (
-          <div className="list-rows">
-            {runs.map((r) => {
-              const pill = STATUS_PILL[r.status];
-              return (
-                <div key={r.id} className="list-row">
-                  <a href={`/runs/${r.id}`} className="list-row-link">
-                    <span className="list-row-icon">
-                      <FlaskConical size={14} />
-                    </span>
-                    <span className="list-row-body">
-                      <span className="list-row-title">{r.name}</span>
-                      <span className="list-row-meta">
-                        <span>{new Date(r.created_at).toLocaleString()}</span>
-                      </span>
-                    </span>
-                  </a>
-                  <span className={`pill ${pill.cls}`}>{pill.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </section>
     </div>
   );
