@@ -1,0 +1,71 @@
+id: gel_extraction
+name: Agarose Gel Extraction
+version: "0.1"
+description: |
+  Purify a single DNA band out of an agarose gel using a silica spin-column
+  kit (Qiagen QIAquick or equivalent). Aim to spend < 60 s on the UV / blue
+  transilluminator to limit nicking.
+
+steps:
+  - id: pour_gel
+    title: Pour a 1 % agarose gel with the appropriate dye
+    duration: 30 min
+    description: |
+      Use SYBR Safe or GelRed if you have a blue-light transilluminator.
+      Use EtBr only if you must run UV. Wide-tooth comb if the band is faint.
+
+  - id: load_and_run
+    title: Load samples + ladder; run until bands are well separated
+    duration: 30–45 min
+    description: |
+      ~100 V for 40 min on a small gel; longer / lower V for tight
+      resolution near the band of interest.
+
+  - id: visualize_and_excise
+    title: Visualise on a blue-light box and excise the band with a clean scalpel
+    duration: 5 min
+    description: |
+      Minimise UV / time on the transilluminator. Trim away excess agarose
+      to keep the slice small (≤ 400 mg).
+
+  - id: weigh
+    title: Weigh the gel slice in a pre-tared 1.5 mL tube
+    duration: 1 min
+
+  - id: dissolve
+    title: Add QG (or kit's solubilisation buffer) at 3 vol / weight
+    duration: 10 min
+    description: |
+      Incubate at 50 °C, vortexing every 2 min until the slice fully dissolves.
+      Solution should be yellow (pH < 7.5). If purple, add 10 µL 3 M NaOAc.
+
+  - id: add_isopropanol
+    title: Add 1 vol isopropanol if fragment is < 500 bp or > 4 kb
+    duration: 1 min
+
+  - id: bind
+    title: Apply to spin column, spin 30 s at 13,000 × g, discard flow-through
+    duration: 2 min
+    description: For volumes > 800 µL, load and spin in two passes.
+
+  - id: wash
+    title: Wash with 750 µL PE buffer; spin 30 s; discard flow-through
+    duration: 2 min
+
+  - id: dry_spin
+    title: Spin empty column 1 min to remove residual ethanol
+    duration: 2 min
+
+  - id: elute
+    title: Elute in 30–50 µL EB or water; spin 1 min
+    duration: 3 min
+    description: |
+      Let elution buffer sit on the membrane for 1 min before the final
+      spin to maximise recovery.
+
+  - id: quantify
+    title: Quantify on Nanodrop or Qubit dsDNA HS
+    duration: 5 min
+    description: |
+      Expect 10–40 % recovery from a typical band. If A260/A230 is poor,
+      a 70 % ethanol wash + re-spin can clean up salt carry-over.

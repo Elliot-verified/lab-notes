@@ -1,0 +1,59 @@
+id: agar_plates
+name: LB Agar Plates (with antibiotic)
+version: "0.1"
+description: |
+  Pour ~20 selective LB agar plates from a 500 mL prep. Antibiotic is added
+  after the agar has cooled to ~55 °C so the heat doesn't degrade it.
+
+steps:
+  - id: weigh_lb_agar
+    title: Weigh 20 g LB-agar powder into a 1 L Erlenmeyer or bottle
+    duration: 5 min
+    description: |
+      35–40 g/L final. Adjust for your kit's recommendation.
+
+  - id: add_water
+    title: Add 500 mL Milli-Q water; swirl to suspend
+    duration: 3 min
+
+  - id: autoclave
+    title: Loosely cap and autoclave on liquid cycle, 121 °C, 20 min
+    duration: ~45 min
+    description: Remember a piece of autoclave tape and a loose foil cap.
+
+  - id: cool
+    title: Cool to ~55 °C
+    duration: 30–40 min
+    description: |
+      Bench cool, or use a 55 °C water bath. Should feel warm but
+      comfortable to hold against the wrist for a few seconds.
+
+  - id: add_antibiotic
+    title: Add antibiotic to 1× working concentration; swirl gently
+    duration: 2 min
+    description: |
+      e.g. 500 µL of 1000× kanamycin stock per 500 mL,
+      or 500 µL of 1000× ampicillin/carbenicillin.
+      Avoid splashing; do not vortex.
+
+  - id: pour_plates
+    title: Pour ~25 mL into each 100 mm plate (≈20 plates)
+    duration: 15 min
+    description: |
+      Pour against the inside of the lid to reduce bubbles. If bubbles form,
+      flame briefly with a Bunsen burner or pop with a pipette tip.
+
+  - id: solidify
+    title: Let plates solidify at room temperature, lids slightly ajar
+    duration: 30–45 min
+
+  - id: dry
+    title: Dry plates inverted at 37 °C for 30 min (or overnight at RT)
+    duration: 30 min
+
+  - id: store
+    title: Label, stack in sleeves, store inverted at 4 °C
+    duration: 5 min
+    description: |
+      Mark with antibiotic, date, and your initials. Good for ~1 month
+      (kan/amp) — shorter for less stable antibiotics like carbenicillin.

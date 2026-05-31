@@ -1,0 +1,49 @@
+id: restriction_digest
+name: Restriction Digest (single or double)
+version: "0.1"
+description: |
+  Cut 500 ng – 1 µg of DNA with one or two restriction enzymes for
+  cloning or diagnostic purposes. Defaults to NEB-style reactions in
+  a 50 µL volume.
+
+steps:
+  - id: lookup_conditions
+    title: Look up enzyme(s) — optimal buffer, temperature, star activity
+    duration: 5 min
+    description: |
+      Use NEBcloner or the kit chart. For double digests, pick the buffer
+      where both enzymes have ≥ 75 % activity. Note any heat-inactivation
+      temperature (65 °C or 80 °C) for later.
+
+  - id: assemble
+    title: Combine DNA, enzyme(s), 10× buffer, and water in a PCR tube
+    duration: 10 min
+    description: |
+      Per 50 µL reaction:
+        500 ng – 1 µg  DNA
+         5  µL         10× buffer (e.g. rCutSmart)
+         0.5 µL each   restriction enzyme (≥ 10 U)
+         water         to 50 µL
+      Add enzyme last; keep on ice until ready to incubate.
+
+  - id: incubate
+    title: Incubate at the enzyme's optimal temperature (usually 37 °C)
+    duration: 1 h
+    description: |
+      30 min often suffices for newer HF enzymes; 1 h is a safe default.
+      Do not over-digest (>16 h) at 37 °C — risk of star activity.
+
+  - id: heat_inactivate
+    title: Heat-inactivate (65 °C / 20 min or 80 °C / 20 min)
+    duration: 20 min
+    description: |
+      Skip if the enzyme is not heat-inactivable (e.g. BsaI-HFv2 — no,
+      BsaI-HFv2 is heat-inactivable; check NEB chart). If continuing
+      to a ligation, you can also column-clean instead.
+
+  - id: gel_check
+    title: Run 5 µL on a 1 % agarose gel against an undigested control
+    duration: 45 min
+    description: |
+      Confirm correct band pattern (number and sizes of fragments).
+      Useful diagnostic before proceeding to gel extraction / cleanup.

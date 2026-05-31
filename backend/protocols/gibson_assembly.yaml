@@ -1,0 +1,52 @@
+id: gibson_assembly
+name: Gibson Assembly
+version: "0.1"
+description: |
+  Isothermal one-pot assembly of 2–6 overlapping DNA fragments using
+  NEBuilder / Gibson Master Mix. Run for 15 min (2–3 frags) or up to
+  60 min (4+ frags). Output goes straight into a transformation.
+
+steps:
+  - id: design_check
+    title: Confirm overlaps (15–40 bp) and verify fragment concentrations
+    duration: 10 min
+    description: |
+      Each fragment should share 15–40 bp of identical sequence with each
+      neighbour. Re-quantify by Nanodrop / Qubit if it has been sitting.
+
+  - id: calculate_amounts
+    title: Calculate fmol of each fragment (recommended 50–100 fmol)
+    duration: 5 min
+    description: |
+      fmol = (ng × 1,000,000) / (bp × 650)
+      Use 2:1 or 3:1 molar ratio of insert(s) to vector.
+      Total DNA volume ≤ 10 µL in a 20 µL reaction.
+
+  - id: thaw_mastermix
+    title: Thaw 2× Gibson / NEBuilder master mix on ice (~10 min)
+    duration: 10 min
+    description: Mix gently after thawing; keep on ice.
+
+  - id: assemble_reaction
+    title: Combine fragments + 10 µL master mix; bring to 20 µL with water
+    duration: 5 min
+    description: |
+      Include a vector-only negative control in parallel — same buffer,
+      same incubation, no inserts. This tells you the background from
+      linearised / re-circularised vector.
+
+  - id: incubate
+    title: Incubate at 50 °C
+    duration: 15–60 min
+    description: |
+      15 min for 2–3 fragments,
+      60 min for 4–6 fragments.
+      Use a thermocycler with a heated lid to prevent evaporation.
+
+  - id: chill
+    title: Cool reaction on ice; transform 2 µL or store at −20 °C
+    duration: 2 min
+    description: |
+      Use 2 µL into 50 µL of high-efficiency competent cells (NEB 5-α,
+      DH5α, Stbl3 depending on construct). For ToxiCloning constructs,
+      use a recombination-deficient strain.

@@ -1,0 +1,52 @@
+id: glycerol_stock
+name: Glycerol Stock (preserve a strain)
+version: "0.1"
+description: |
+  Make a 25 % glycerol freezer stock of a verified bacterial strain.
+  Two stocks per construct is standard — one working, one archive.
+
+steps:
+  - id: grow_overnight
+    title: Grow an overnight culture from a verified colony (3–5 mL LB + antibiotic)
+    duration: 5 min + overnight
+    description: |
+      Pick a single, well-isolated colony (ideally already sequence-verified).
+      37 °C, 220 rpm, 12–16 h. Don't use cultures older than 24 h.
+
+  - id: label_vials
+    title: Label 2× sterile cryovials clearly
+    duration: 3 min
+    description: |
+      Include: strain · construct ID · antibiotic · date · your initials.
+      Use a cryo-safe marker; tape labels fall off in the −80 °C.
+
+  - id: prepare_glycerol
+    title: Aliquot 500 µL sterile 50 % glycerol into each vial
+    duration: 3 min
+    description: |
+      50 % glycerol stock should be autoclaved and kept aside in 50 mL
+      Falcon. Final concentration in the vial will be 25 %.
+
+  - id: add_culture
+    title: Add 500 µL of overnight culture to each vial
+    duration: 2 min
+    description: |
+      Pipette gently — do not introduce bubbles. Cap firmly.
+
+  - id: mix
+    title: Mix by inverting 5–10 times
+    duration: 1 min
+
+  - id: snap_freeze
+    title: Snap-freeze in liquid nitrogen (or directly to −80 °C)
+    duration: 2 min
+    description: |
+      LN2 is faster and protects viability slightly better; direct to
+      −80 °C is fine for routine strains.
+
+  - id: log_and_store
+    title: Log the stock and store at −80 °C
+    duration: 3 min
+    description: |
+      Record box / position in your strain inventory. Keep the two vials
+      in different boxes if possible (working vs. archive).
