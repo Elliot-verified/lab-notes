@@ -180,15 +180,22 @@ def _serialize_note(note: Note) -> schemas.NoteOut:
 @app.get("/api/notes", response_model=list[schemas.NoteSummary])
 def list_notes(db: Session = Depends(get_session)):
     rows = db.query(Note).order_by(Note.updated_at.desc()).all()
-    return [
-        schemas.NoteSummary(
-            id=n.id,
-            title=n.title,
-            updated_at=n.updated_at,
-            block_count=len(n.blocks or []),
+    out = []
+    for n in rows:
+        blocks = n.blocks or []
+        steps = [b for b in blocks if b.get("type") == "step"]
+        done = sum(1 for s in steps if s.get("status") == "done")
+        out.append(
+            schemas.NoteSummary(
+                id=n.id,
+                title=n.title,
+                updated_at=n.updated_at,
+                block_count=len(blocks),
+                step_count=len(steps),
+                step_done_count=done,
+            )
         )
-        for n in rows
-    ]
+    return out
 
 
 @app.post("/api/notes", response_model=schemas.NoteOut)

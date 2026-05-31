@@ -85,6 +85,8 @@ class NoteSummary(BaseModel):
     title: str
     updated_at: datetime
     block_count: int
+    step_count: int = 0
+    step_done_count: int = 0
 
 
 class CreateNoteIn(BaseModel):

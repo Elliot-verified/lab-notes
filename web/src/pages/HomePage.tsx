@@ -1,17 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  AlertTriangle,
+  Beaker,
+  Check,
   FileText,
   FlaskConical,
-  Plus,
-  X,
-  Beaker,
   History,
-  AlertTriangle,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
 } from "lucide-react";
 import { api } from "../api";
 import type { Health } from "../api";
 import type { NoteSummary, Protocol, Run } from "../types";
+
+type NoteStatus = "draft" | "in_progress" | "complete";
+
+function noteStatus(n: NoteSummary): NoteStatus {
+  if (n.step_count === 0) return "draft";
+  if (n.step_done_count >= n.step_count) return "complete";
+  return "in_progress";
+}
+
+const STATUS_PILL: Record<NoteStatus | Run["status"], { label: string; cls: string }> = {
+  draft:       { label: "draft",        cls: "pill-pending" },
+  in_progress: { label: "in progress",  cls: "pill-active" },
+  complete:    { label: "complete",     cls: "pill-done" },
+};
 
 export default function HomePage() {
   const [protocols, setProtocols] = useState<Protocol[]>([]);
@@ -19,6 +36,8 @@ export default function HomePage() {
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,18 +55,14 @@ export default function HomePage() {
     try {
       const run = await api.createRun(protocolId);
       navigate(`/runs/${run.id}`);
-    } catch (e) {
-      setError(String(e));
-    }
+    } catch (e) { setError(String(e)); }
   }
 
   async function newNote() {
     try {
       const note = await api.createNote();
       navigate(`/notes/${note.id}`);
-    } catch (e) {
-      setError(String(e));
-    }
+    } catch (e) { setError(String(e)); }
   }
 
   async function deleteNote(id: string, title: string) {
@@ -55,9 +70,34 @@ export default function HomePage() {
     try {
       await api.deleteNote(id);
       setNotes((prev) => prev.filter((n) => n.id !== id));
+    } catch (e) { setError(String(e)); }
+  }
+
+  function startRename(n: NoteSummary) {
+    setEditingId(n.id);
+    setEditTitle(n.title || "");
+  }
+
+  async function commitRename(id: string) {
+    const next = editTitle.trim() || "Untitled note";
+    setEditingId(null);
+    const original = notes.find((n) => n.id === id);
+    if (!original || original.title === next) return;
+    // optimistic update
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, title: next } : n)));
+    try {
+      await api.updateNote(id, { title: next });
     } catch (e) {
       setError(String(e));
+      if (original) {
+        setNotes((prev) => prev.map((n) => (n.id === id ? original : n)));
+      }
     }
+  }
+
+  function cancelRename() {
+    setEditingId(null);
+    setEditTitle("");
   }
 
   return (
@@ -92,45 +132,76 @@ export default function HomePage() {
             <p className="small">Start a fresh lab notebook entry.</p>
           </div>
         ) : (
-          <ul className="note-index">
-            {notes.map((n) => (
-              <li key={n.id}>
-                <a href={`/notes/${n.id}`} className="note-index-link">
-                  <span className="note-index-icon">
-                    <FileText size={16} />
-                  </span>
-                  <span className="note-index-body">
-                    <span className="note-index-title">
-                      {n.title || "Untitled note"}
-                    </span>
-                    <span className="note-index-meta">
-                      <span>
-                        {n.block_count} block{n.block_count === 1 ? "" : "s"}
+          <div className="list-rows">
+            {notes.map((n) => {
+              const status = noteStatus(n);
+              const pill = STATUS_PILL[status];
+              const isEditing = editingId === n.id;
+              return (
+                <div key={n.id} className="list-row">
+                  {isEditing ? (
+                    <RenameRow
+                      icon={<FileText size={14} />}
+                      value={editTitle}
+                      onChange={setEditTitle}
+                      onSave={() => commitRename(n.id)}
+                      onCancel={cancelRename}
+                    />
+                  ) : (
+                    <a href={`/notes/${n.id}`} className="list-row-link">
+                      <span className="list-row-icon">
+                        <FileText size={14} />
                       </span>
-                      <span className="dot" />
-                      <span>{new Date(n.updated_at).toLocaleString()}</span>
-                    </span>
-                  </span>
-                </a>
-                <button
-                  className="icon-btn danger note-delete"
-                  title="Delete note"
-                  onClick={() => deleteNote(n.id, n.title)}
-                  aria-label="Delete note"
-                >
-                  <X size={14} />
-                </button>
-              </li>
-            ))}
-          </ul>
+                      <span className="list-row-body">
+                        <span className="list-row-title">
+                          {n.title || "Untitled note"}
+                        </span>
+                        <span className="list-row-meta">
+                          <span>
+                            {n.step_count > 0
+                              ? `${n.step_done_count}/${n.step_count} steps`
+                              : `${n.block_count} block${n.block_count === 1 ? "" : "s"}`}
+                          </span>
+                          <span className="dot" />
+                          <span>{new Date(n.updated_at).toLocaleString()}</span>
+                        </span>
+                      </span>
+                    </a>
+                  )}
+
+                  {!isEditing && (
+                    <>
+                      <span className={`pill ${pill.cls}`}>{pill.label}</span>
+                      <span className="list-row-actions">
+                        <button
+                          className="icon-btn"
+                          title="Rename note"
+                          onClick={() => startRename(n)}
+                          aria-label="Rename note"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          className="icon-btn danger"
+                          title="Delete note"
+                          onClick={() => deleteNote(n.id, n.title)}
+                          aria-label="Delete note"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </section>
 
       {/* ── Protocols ────────────────────────────────────────── */}
       <section>
-        <div className="section-head">
-          <h2>Protocols</h2>
-        </div>
+        <div className="section-head"><h2>Protocols</h2></div>
         <p className="section-intro">
           Start a run — the checklist adapts as you enter results.
         </p>
@@ -157,9 +228,7 @@ export default function HomePage() {
 
       {/* ── Recent runs ──────────────────────────────────────── */}
       <section>
-        <div className="section-head">
-          <h2>Recent runs</h2>
-        </div>
+        <div className="section-head"><h2>Recent runs</h2></div>
         {runs.length === 0 ? (
           <div className="empty-state">
             <History size={28} />
@@ -167,26 +236,75 @@ export default function HomePage() {
             <p className="small">Start a protocol above to see it here.</p>
           </div>
         ) : (
-          <div>
-            {runs.map((r) => (
-              <a key={r.id} href={`/runs/${r.id}`} className="run-row">
-                <span className="run-row-icon">
-                  <FlaskConical size={14} />
-                </span>
-                <span className="run-row-body">
-                  <span className="run-row-title">{r.name}</span>
-                  <span className="run-row-meta">
-                    <span>{new Date(r.created_at).toLocaleString()}</span>
-                  </span>
-                </span>
-                <span className={`pill pill-${r.status === "complete" ? "done" : "active"}`}>
-                  {r.status === "complete" ? "complete" : "in progress"}
-                </span>
-              </a>
-            ))}
+          <div className="list-rows">
+            {runs.map((r) => {
+              const pill = STATUS_PILL[r.status];
+              return (
+                <div key={r.id} className="list-row">
+                  <a href={`/runs/${r.id}`} className="list-row-link">
+                    <span className="list-row-icon">
+                      <FlaskConical size={14} />
+                    </span>
+                    <span className="list-row-body">
+                      <span className="list-row-title">{r.name}</span>
+                      <span className="list-row-meta">
+                        <span>{new Date(r.created_at).toLocaleString()}</span>
+                      </span>
+                    </span>
+                  </a>
+                  <span className={`pill ${pill.cls}`}>{pill.label}</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function RenameRow({
+  icon,
+  value,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+  return (
+    <div className="list-row-rename">
+      <span className="list-row-icon">{icon}</span>
+      <input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSave();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            onCancel();
+          }
+        }}
+      />
+      <button className="icon-btn" title="Save" onMouseDown={(e) => { e.preventDefault(); onSave(); }}>
+        <Check size={14} />
+      </button>
+      <button className="icon-btn" title="Cancel" onMouseDown={(e) => { e.preventDefault(); onCancel(); }}>
+        <X size={14} />
+      </button>
     </div>
   );
 }

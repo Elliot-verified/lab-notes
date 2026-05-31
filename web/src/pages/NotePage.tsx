@@ -349,8 +349,8 @@ export default function NotePage() {
                   </>
                 )}
               </span>
-              <button className="icon-btn danger" onClick={handleDelete} title="Delete note">
-                <Trash2 size={14} />
+              <button className="ghost danger-ghost" onClick={handleDelete} title="Delete note">
+                <Trash2 size={14} /> Delete note
               </button>
             </div>
           </div>

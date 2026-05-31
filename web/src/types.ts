@@ -66,6 +66,8 @@ export type NoteSummary = {
   title: string;
   updated_at: string;
   block_count: number;
+  step_count: number;
+  step_done_count: number;
 };
 
 export type Run = {

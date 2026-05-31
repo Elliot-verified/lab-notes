@@ -130,6 +130,14 @@ button.ghost {
   padding: 7px 12px;
 }
 button.ghost:hover { background: var(--surface-2); }
+button.ghost.danger-ghost {
+  color: var(--error);
+  border-color: color-mix(in oklab, var(--error) 22%, var(--border));
+}
+button.ghost.danger-ghost:hover {
+  background: var(--error-soft);
+  border-color: color-mix(in oklab, var(--error) 40%, transparent);
+}
 
 button.subtle {
   background: var(--surface-2);
@@ -324,25 +332,27 @@ section + section { margin-top: var(--s-10); }
 .empty-state h3 { color: var(--fg-2); margin-bottom: 4px; }
 
 /* ============================================================
-   Home — Notes index
+   List rows — shared by Notes and Recent runs
    ============================================================ */
 
-.note-index { list-style: none; padding: 0; margin: 0; }
-.note-index li {
+.list-rows { display: flex; flex-direction: column; gap: 6px; }
+
+.list-row {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  margin-bottom: 6px;
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  transition: border-color 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
+  gap: var(--s-2);
+  padding-right: var(--s-3);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
-.note-index li:hover {
+.list-row:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-sm);
 }
-.note-index-link {
+
+.list-row-link {
   flex: 1;
   display: flex;
   align-items: center;
@@ -352,18 +362,20 @@ section + section { margin-top: var(--s-10); }
   color: inherit;
   min-width: 0;
 }
-.note-index-icon {
+
+.list-row-icon {
   width: 32px;
   height: 32px;
   display: grid;
   place-items: center;
   border-radius: var(--r);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--surface-2);
+  color: var(--muted);
   flex-shrink: 0;
 }
-.note-index-body { flex: 1; min-width: 0; }
-.note-index-title {
+
+.list-row-body { flex: 1; min-width: 0; }
+.list-row-title {
   font-weight: 500;
   color: var(--fg);
   display: block;
@@ -371,25 +383,41 @@ section + section { margin-top: var(--s-10); }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.note-index-meta {
+.list-row-meta {
   color: var(--muted);
   font-size: var(--text-xs);
   display: flex;
   gap: var(--s-2);
   align-items: center;
 }
-.note-index-meta .dot {
+.list-row-meta .dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
   background: var(--muted-2);
 }
-.note-delete {
-  margin-right: var(--s-2);
-  opacity: 0;
-  transition: opacity 0.12s ease;
+
+.list-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 }
-.note-index li:hover .note-delete { opacity: 1; }
+
+/* Inline rename input — sits inside the link slot when editing */
+.list-row-rename {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+}
+.list-row-rename input {
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: 500;
+  padding: 6px 10px;
+}
 
 /* ============================================================
    Home — Protocols
@@ -442,45 +470,6 @@ section + section { margin-top: var(--s-10); }
   flex: 1;
 }
 .protocol-card button { align-self: flex-start; margin-top: var(--s-3); }
-
-/* ============================================================
-   Home — Recent runs
-   ============================================================ */
-
-.run-row {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: var(--s-3) var(--s-4);
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  margin-bottom: 6px;
-  text-decoration: none;
-  color: inherit;
-}
-.run-row:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
-}
-.run-row-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--r);
-  background: var(--surface-2);
-  color: var(--muted);
-}
-.run-row-body { flex: 1; min-width: 0; }
-.run-row-title { font-weight: 500; }
-.run-row-meta {
-  color: var(--muted);
-  font-size: var(--text-xs);
-  display: flex;
-  gap: var(--s-2);
-  align-items: center;
-}
 
 /* ============================================================
    Run page — unified step component
