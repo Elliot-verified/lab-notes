@@ -19,6 +19,17 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import {
+  ArrowLeft,
+  Beaker,
+  Check,
+  Clock,
+  GripVertical,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { api } from "../api";
 import type { Note, NoteBlock, Protocol } from "../types";
@@ -31,6 +42,10 @@ const newId = () =>
 const TPL_PREFIX = "tpl:";
 const BLOCK_PREFIX = "block:";
 const EMPTY_DROP_ID = "empty-note";
+
+function isStepBlock(b: NoteBlock): b is Extract<NoteBlock, { type: "step" }> {
+  return b.type === "step";
+}
 
 function blocksFromProtocol(p: Protocol): NoteBlock[] {
   return p.steps.map((s) => ({
@@ -315,9 +330,9 @@ export default function NotePage() {
         </aside>
 
         <div className="note-main">
-          <div className="note-back">
-            <Link to="/" className="back-link">← All notes</Link>
-          </div>
+          <Link to="/" className="back-link">
+            <ArrowLeft size={14} /> All notes
+          </Link>
           <div className="note-header">
             <input
               className="note-title"
@@ -326,11 +341,17 @@ export default function NotePage() {
               placeholder="Untitled note"
             />
             <div className="note-meta">
-              <span className="muted small">
+              <span className={`save-state ${saveState === "saved" ? "saved" : ""}`}>
                 {saveState === "saving" && "Saving…"}
-                {saveState === "saved" && "Saved"}
+                {saveState === "saved" && (
+                  <>
+                    <Check size={11} /> Saved
+                  </>
+                )}
               </span>
-              <button className="ghost small" onClick={handleDelete}>Delete</button>
+              <button className="icon-btn danger" onClick={handleDelete} title="Delete note">
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
 
@@ -338,9 +359,9 @@ export default function NotePage() {
 
           <NoteProgress blocks={note.blocks} />
 
-          <p className="muted small note-hint">
-            Drag templates from the sidebar, or press <kbd>/</kbd> in an empty block.
-            Click the checkbox on a step to mark it done.
+          <p className="note-hint">
+            Drag templates from the sidebar, or press <kbd>/</kbd> in an empty
+            block. Click a checkbox to mark a step done.
           </p>
 
           <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
@@ -363,12 +384,14 @@ export default function NotePage() {
 
               {note.blocks.length > 0 && (
                 <div className="block-add-row">
-                  <button className="ghost" onClick={appendTextBlock}>+ Text block</button>
+                  <button className="ghost" onClick={appendTextBlock}>
+                    <Plus size={14} /> Text block
+                  </button>
                   <button
                     className="ghost"
                     onClick={() => openSlashAt(note.blocks.length - 1)}
                   >
-                    + Insert template (/)
+                    <Plus size={14} /> Template (<kbd>/</kbd>)
                   </button>
                 </div>
               )}
@@ -379,9 +402,9 @@ export default function NotePage() {
 
       <DragOverlay dropAnimation={null}>
         {dragActiveProtocol && (
-          <div className="drag-ghost template-card">
-            <div className="card-title">{dragActiveProtocol.name}</div>
-            <div className="muted small">
+          <div className="drag-ghost">
+            <div className="template-card-title">{dragActiveProtocol.name}</div>
+            <div className="template-card-meta">
               {dragActiveProtocol.steps.length} steps · v{dragActiveProtocol.version}
             </div>
           </div>
@@ -398,16 +421,19 @@ export default function NotePage() {
       {slashOpen && (
         <div className="slash-backdrop" onClick={() => setSlashOpen(false)}>
           <div className="slash-popover" onClick={(e) => e.stopPropagation()}>
-            <input
-              autoFocus
-              placeholder="Search protocols…"
-              value={slashQuery}
-              onChange={(e) => {
-                setSlashQuery(e.target.value);
-                setSlashIndex(0);
-              }}
-              onKeyDown={handleSlashKeyDown}
-            />
+            <div className="slash-search">
+              <Search size={14} color="var(--muted)" />
+              <input
+                autoFocus
+                placeholder="Search protocols…"
+                value={slashQuery}
+                onChange={(e) => {
+                  setSlashQuery(e.target.value);
+                  setSlashIndex(0);
+                }}
+                onKeyDown={handleSlashKeyDown}
+              />
+            </div>
             <ul className="slash-list">
               {filteredProtocols.length === 0 && (
                 <li className="muted small">No matches</li>
@@ -419,15 +445,21 @@ export default function NotePage() {
                   onMouseEnter={() => setSlashIndex(i)}
                   onClick={() => insertProtocolFromSlash(p)}
                 >
-                  <div className="slash-name">{p.name}</div>
-                  <div className="muted small">
-                    {p.steps.length} steps · v{p.version}
+                  <span className="icon-tile">
+                    <Beaker size={14} />
+                  </span>
+                  <div>
+                    <div className="slash-name">{p.name}</div>
+                    <div className="slash-meta">
+                      {p.steps.length} steps · v{p.version}
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
-            <div className="muted small slash-hint">
-              ↑/↓ to navigate · Enter to insert · Esc to cancel
+            <div className="slash-hint">
+              <kbd>↑</kbd> <kbd>↓</kbd> navigate · <kbd>Enter</kbd> insert ·{" "}
+              <kbd>Esc</kbd> cancel
             </div>
           </div>
         </div>
@@ -437,19 +469,18 @@ export default function NotePage() {
 }
 
 function NoteProgress({ blocks }: { blocks: NoteBlock[] }) {
-  // Count any block that carries a status (every newly created block does).
-  const checkable = blocks.filter((b) => b.status !== undefined);
-  if (checkable.length === 0) return null;
-  const done = checkable.filter((b) => b.status === "done").length;
-  const pct = Math.round((done / checkable.length) * 100);
-  const allDone = done === checkable.length;
+  const steps = blocks.filter(isStepBlock);
+  if (steps.length === 0) return null;
+  const done = steps.filter((s) => (s.status ?? "pending") === "done").length;
+  const pct = Math.round((done / steps.length) * 100);
+  const allDone = done === steps.length;
   return (
     <div className={`progress-row ${allDone ? "all-done" : ""}`}>
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
-      <div className="progress-text small">
-        {done} of {checkable.length} item{checkable.length === 1 ? "" : "s"} done
+      <div className="progress-text">
+        {done} of {steps.length} step{steps.length === 1 ? "" : "s"} done
         {allDone && " · ✓"}
       </div>
     </div>
@@ -468,8 +499,8 @@ function TemplateCard({ protocol }: { protocol: Protocol }) {
       className={`template-card ${isDragging ? "dragging" : ""}`}
       title="Drag into the note"
     >
-      <div className="card-title">{protocol.name}</div>
-      <div className="muted small">
+      <div className="template-card-title">{protocol.name}</div>
+      <div className="template-card-meta">
         {protocol.steps.length} steps · v{protocol.version}
       </div>
     </div>
@@ -490,8 +521,11 @@ function EmptyDropZone({
       ref={setNodeRef}
       className={`empty-drop ${active ? "active" : ""} ${isOver ? "over" : ""}`}
     >
-      <div>Drop a template here, or</div>
-      <button className="ghost" onClick={onAddText}>+ Add first text block</button>
+      <Beaker size={28} />
+      <div>Drop a protocol template here</div>
+      <button className="subtle" onClick={onAddText}>
+        <Plus size={14} /> or start with a text block
+      </button>
     </div>
   );
 }
@@ -545,30 +579,25 @@ function SortableBlock({
       <div className="block-gutter">
         <button
           ref={setActivatorNodeRef}
-          className="icon grip"
+          className="icon-btn"
           title="Drag to reorder"
           {...listeners}
           {...attributes}
-        >⋮⋮</button>
+        >
+          <GripVertical size={14} />
+        </button>
         <button
-          className="icon icon-danger"
+          className="icon-btn danger"
           title="Delete block"
           onClick={onRemove}
-        >×</button>
+        >
+          <X size={14} />
+        </button>
       </div>
 
       <div className="block-body">
         {block.type === "text" ? (
-          <div className="text-row">
-            <input
-              type="checkbox"
-              className="step-check"
-              checked={isDone}
-              onChange={(e) =>
-                onChange({ status: e.target.checked ? "done" : "pending" })
-              }
-              title={isDone ? "Mark as not done" : "Mark as done"}
-            />
+          <div className="text-block">
             <textarea
               value={block.content}
               placeholder="Write something… (press / for templates)"
@@ -596,7 +625,7 @@ function SortableBlock({
                 placeholder="Step title"
               />
               <span className="duration-field">
-                ⏱
+                <Clock size={11} />
                 <input
                   className="duration-input"
                   value={block.type === "step" ? block.duration ?? "" : ""}

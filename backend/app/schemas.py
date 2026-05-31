@@ -30,6 +30,7 @@ class ProtocolOut(BaseModel):
 
 
 class RunStepOut(BaseModel):
+    id: int
     step_id: str
     position: int
     status: str

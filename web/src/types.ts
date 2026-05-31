@@ -22,6 +22,7 @@ export type Protocol = {
 };
 
 export type RunStep = {
+  id: number;
   step_id: string;
   position: number;
   status: "pending" | "done" | "skipped";

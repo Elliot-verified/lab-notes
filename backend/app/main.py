@@ -42,6 +42,7 @@ def _serialize_run(run: Run) -> schemas.RunOut:
         defn = library.get(s.step_id)
         steps_out.append(
             schemas.RunStepOut(
+                id=s.id,
                 step_id=s.step_id,
                 position=s.position,
                 status=s.status,
