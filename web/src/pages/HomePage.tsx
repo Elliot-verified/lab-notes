@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -7,6 +7,7 @@ import {
   FileText,
   Pencil,
   Plus,
+  Search,
   Trash2,
   X,
 } from "lucide-react";
@@ -40,6 +41,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,14 +54,14 @@ export default function HomePage() {
       .catch((e) => setError(String(e)));
   }, []);
 
-  async function newNote() {
+  async function createBlank() {
     try {
       const note = await api.createNote();
       navigate(`/notes/${note.id}`);
     } catch (e) { setError(String(e)); }
   }
 
-  async function newNoteFromTemplate(p: Protocol) {
+  async function createFromTemplate(p: Protocol) {
     try {
       const note = await api.createNote(p.name);
       const blocks: NoteBlock[] = p.steps.map((s) => ({
@@ -113,11 +115,10 @@ export default function HomePage() {
     <div>
       {error && <div className="error">{error}</div>}
 
-      {/* ── Notes ────────────────────────────────────────────── */}
       <section>
         <div className="section-head">
           <h2>Notes</h2>
-          <button className="primary" onClick={newNote}>
+          <button className="primary" onClick={() => setPickerOpen(true)}>
             <Plus size={14} /> New note
           </button>
         </div>
@@ -138,7 +139,9 @@ export default function HomePage() {
           <div className="empty-state">
             <FileText size={28} />
             <h3>No notes yet</h3>
-            <p className="small">Start a fresh lab notebook entry.</p>
+            <p className="small">
+              Click <strong>New note</strong> to start blank or from a template.
+            </p>
           </div>
         ) : (
           <div className="list-rows">
@@ -208,33 +211,20 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ── Protocols (template browser) ────────────────────── */}
-      <section>
-        <div className="section-head"><h2>Templates</h2></div>
-        <p className="section-intro">
-          Start a new note pre-filled with these steps — then edit, reorder,
-          and check off as you go.
-        </p>
-        <div className="card-grid">
-          {protocols.map((p) => (
-            <div key={p.id} className="protocol-card">
-              <span className="icon-tile">
-                <Beaker size={16} />
-              </span>
-              <div className="protocol-card-title">{p.name}</div>
-              <div className="protocol-card-meta">
-                <span>v{p.version}</span>
-                <span>·</span>
-                <span>{p.steps.length} steps</span>
-              </div>
-              <p className="protocol-card-desc">{p.description}</p>
-              <button className="primary" onClick={() => newNoteFromTemplate(p)}>
-                <Plus size={14} /> New note from template
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+      {pickerOpen && (
+        <NewNotePicker
+          protocols={protocols}
+          onClose={() => setPickerOpen(false)}
+          onPickBlank={() => {
+            setPickerOpen(false);
+            createBlank();
+          }}
+          onPickTemplate={(p) => {
+            setPickerOpen(false);
+            createFromTemplate(p);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -281,6 +271,124 @@ function RenameRow({
       <button className="icon-btn" title="Cancel" onMouseDown={(e) => { e.preventDefault(); onCancel(); }}>
         <X size={14} />
       </button>
+    </div>
+  );
+}
+
+function NewNotePicker({
+  protocols,
+  onClose,
+  onPickBlank,
+  onPickTemplate,
+}: {
+  protocols: Protocol[];
+  onClose: () => void;
+  onPickBlank: () => void;
+  onPickTemplate: (p: Protocol) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [index, setIndex] = useState(0);
+
+  const filteredProtocols = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return protocols;
+    return protocols.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+    );
+  }, [protocols, query]);
+
+  // Items: "Blank note" is always at index 0 when query is empty; otherwise hide it.
+  const showBlank = query.trim() === "";
+  const totalItems = (showBlank ? 1 : 0) + filteredProtocols.length;
+
+  function pickAt(i: number) {
+    if (showBlank && i === 0) return onPickBlank();
+    const tplIdx = showBlank ? i - 1 : i;
+    const p = filteredProtocols[tplIdx];
+    if (p) onPickTemplate(p);
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setIndex((i) => Math.min(i + 1, totalItems - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      pickAt(index);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+    }
+  }
+
+  return (
+    <div className="slash-backdrop" onClick={onClose}>
+      <div className="slash-popover" onClick={(e) => e.stopPropagation()}>
+        <div className="slash-search">
+          <Search size={14} color="var(--muted)" />
+          <input
+            autoFocus
+            placeholder="Start blank or search a template…"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setIndex(0);
+            }}
+            onKeyDown={onKeyDown}
+          />
+        </div>
+        <ul className="slash-list">
+          {showBlank && (
+            <li
+              className={index === 0 ? "active" : ""}
+              onMouseEnter={() => setIndex(0)}
+              onClick={onPickBlank}
+            >
+              <span className="icon-tile">
+                <FileText size={14} />
+              </span>
+              <div>
+                <div className="slash-name">Blank note</div>
+                <div className="slash-meta">Start with an empty notebook</div>
+              </div>
+            </li>
+          )}
+          {filteredProtocols.length === 0 && !showBlank && (
+            <li className="muted small">No matches</li>
+          )}
+          {filteredProtocols.map((p, i) => {
+            const itemIdx = (showBlank ? 1 : 0) + i;
+            return (
+              <li
+                key={p.id}
+                className={itemIdx === index ? "active" : ""}
+                onMouseEnter={() => setIndex(itemIdx)}
+                onClick={() => onPickTemplate(p)}
+              >
+                <span className="icon-tile">
+                  <Beaker size={14} />
+                </span>
+                <div>
+                  <div className="slash-name">{p.name}</div>
+                  <div className="slash-meta">
+                    {p.steps.length} steps · v{p.version}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="slash-hint">
+          <kbd>↑</kbd> <kbd>↓</kbd> navigate · <kbd>Enter</kbd> create ·{" "}
+          <kbd>Esc</kbd> cancel
+        </div>
+      </div>
     </div>
   );
 }
