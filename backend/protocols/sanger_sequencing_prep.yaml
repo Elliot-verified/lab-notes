@@ -1,0 +1,55 @@
+id: sanger_sequencing_prep
+name: Sanger Sequencing Sample Prep
+version: "0.1"
+description: |
+  Prepare plasmid or PCR samples for outsourced Sanger sequencing
+  (Genewiz / Azenta, Plasmidsaurus, Eurofins, or in-house core).
+  Follow your facility's exact tube and volume guidance — this is the
+  common template.
+
+steps:
+  - id: gather_constructs
+    title: Identify constructs and decide which primer(s) to use per sample
+    duration: 10 min
+    description: |
+      For new vectors: pick a sequencing primer that lands ~50–100 bp
+      upstream of the region of interest. Standard primers: M13F/R,
+      T7, T3, SP6, BGH-rev, pCMV-fwd. Check your vector map.
+
+  - id: quantify
+    title: Re-quantify each sample on Nanodrop; confirm A260/A280 1.8–2.0
+    duration: 10 min
+    description: |
+      Bad ratios = bad reads. Re-prep or ethanol clean any sample with
+      A260/A280 < 1.7. PCR products should be column-cleaned first.
+
+  - id: dilute_to_spec
+    title: Dilute each sample to the facility's required concentration
+    duration: 10 min
+    description: |
+      Typical:
+        Plasmid:        50–100 ng/µL in water (not EB / TE for some kits)
+        Purified PCR:   10–25 ng/µL per 1 kb
+      Use water if the vendor specifies — buffer salts can interfere.
+
+  - id: prep_primer_tubes
+    title: Aliquot primer per facility template (premix or separate tube)
+    duration: 10 min
+    description: |
+      Premix kits (most common): combine template + primer in one tube,
+      e.g. 5 µL template + 5 µL primer (5 µM). Label per the vendor's
+      barcode scheme.
+
+  - id: label_and_check
+    title: Label tubes per vendor convention; double-check the order form
+    duration: 10 min
+    description: |
+      Mismatched labels are the #1 cause of failed sequencing runs.
+      Cross-check the order form against the physical tube labels.
+
+  - id: drop_off
+    title: Submit to drop box / ship overnight on a cold pack if remote
+    duration: 5 min
+    description: |
+      Most vendors return reads within 24 h. Expect ~800 bp of high-quality
+      sequence per read; trim ends before analysis.

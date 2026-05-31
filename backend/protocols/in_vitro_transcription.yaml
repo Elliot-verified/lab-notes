@@ -1,0 +1,77 @@
+id: in_vitro_transcription
+name: In Vitro Transcription (T7, mRNA / sgRNA)
+version: "0.1"
+description: |
+  Make RNA from a DNA template using T7 RNA polymerase. Works for sgRNAs,
+  mRNAs (with capping), and probes. Linearise the template first if it's
+  a plasmid; PCR products are ready to go.
+
+steps:
+  - id: prep_template
+    title: Linearise plasmid (or PCR-amplify) downstream of the T7 promoter
+    duration: 1 h
+    description: |
+      For plasmids: cut with a single enzyme that drops the 3' end into a
+      blunt or 5'-overhang site. Avoid 3' overhangs — T7 can run back.
+      Clean up the digest (column or SPRI). Final concentration ≥ 100 ng/µL.
+
+  - id: rnase_setup
+    title: Set up an RNase-free workspace; wipe bench with RNaseZap
+    duration: 5 min
+    description: |
+      Dedicated tips, tubes, water. Wear fresh gloves. No PCR products
+      sitting open nearby — RNase A is everywhere.
+
+  - id: assemble_rxn
+    title: Assemble 20 µL transcription reaction
+    duration: 10 min
+    description: |
+      Per 20 µL (NEB HiScribe T7 or equivalent):
+        1  µg     linearised template
+        10 µL    10 mM NTP mix (2.5 mM each)
+        2  µL     10× reaction buffer
+        2  µL     T7 RNAP mix
+        water    to 20 µL
+      Add polymerase last; mix gently; spin down.
+
+  - id: incubate
+    title: Incubate at 37 °C
+    duration: 2–4 h
+    description: |
+      sgRNAs (short, < 200 nt): 2 h.
+      mRNAs (long, > 1 kb):      4 h or overnight at 37 °C.
+      Yields plateau around 4 h for most templates.
+
+  - id: dnase_treat
+    title: Add 2 U DNase I; incubate 15 min at 37 °C
+    duration: 15 min
+    description: |
+      Removes the DNA template. Skip if running on a denaturing gel only —
+      always treat before downstream functional assays.
+
+  - id: cleanup
+    title: Clean up by column or LiCl precipitation
+    duration: 30 min
+    description: |
+      Column kit (Monarch / RNeasy): fast, lower yield.
+      LiCl precipitation: higher yield, slower (2 h at −20 °C).
+      Elute in nuclease-free water.
+
+  - id: quantify
+    title: Quantify on Nanodrop (RNA setting); check A260/A280 ≥ 2.0
+    duration: 5 min
+
+  - id: qc_gel
+    title: Run 200–500 ng on a denaturing gel (TBE-urea or formaldehyde)
+    duration: 45 min
+    description: |
+      Look for a tight band at the expected size. Smears suggest
+      degradation; multiple bands suggest run-on transcription or
+      incomplete template linearisation.
+
+  - id: aliquot_and_store
+    title: Aliquot and store at −80 °C; avoid freeze-thaw cycles
+    duration: 10 min
+    description: |
+      Single-use aliquots (5–10 µL). Each freeze-thaw degrades RNA
+      noticeably for sensitive applications.

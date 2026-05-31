@@ -1,0 +1,65 @@
+id: dialysis
+name: Protein Dialysis (buffer exchange)
+version: "0.1"
+description: |
+  Exchange a protein into a new buffer (or remove a small molecule like
+  imidazole / salt) using a dialysis cassette or membrane tubing in the
+  cold room overnight.
+
+steps:
+  - id: choose_mwco
+    title: Pick a membrane MWCO below your protein's molecular weight
+    duration: 5 min
+    description: |
+      Rule of thumb: MWCO ≤ ⅓ × protein MW (e.g. 10 kDa MWCO for a 30 kDa
+      protein). Higher MWCO retains less but exchanges faster.
+
+  - id: prep_buffer
+    title: Make ≥ 1000× sample volume of fresh dialysis buffer; chill at 4 °C
+    duration: 20 min
+    description: |
+      For a 1 mL sample, that's 1 L of buffer per exchange step. Filter
+      (0.22 µm) for any sensitive applications.
+
+  - id: hydrate_membrane
+    title: Pre-rinse / hydrate the membrane in dialysis buffer for 5–10 min
+    duration: 10 min
+    description: |
+      Skip glycerol-storage cassettes that say "ready to use" — but always
+      rinse off the storage solution.
+
+  - id: load_sample
+    title: Load sample into the cassette / tubing; seal carefully
+    duration: 5 min
+    description: |
+      Leave ~10 % headspace for buffer entering during osmotic equilibration.
+      Mark each cassette with tape (sample id, MWCO, your initials).
+
+  - id: first_exchange
+    title: Stir at 4 °C for 2–4 h in first volume of buffer
+    duration: 2–4 h
+    description: |
+      Use a magnetic stir bar set just fast enough to keep buffer moving;
+      too fast can damage delicate membranes.
+
+  - id: second_exchange
+    title: Transfer to fresh chilled buffer; stir overnight at 4 °C
+    duration: overnight
+    description: |
+      Two exchanges is sufficient for ~10⁶-fold buffer reduction.
+      Three exchanges if you absolutely need to remove the original buffer.
+
+  - id: recover_sample
+    title: Recover sample; rinse cassette and pool the rinse if needed
+    duration: 5 min
+    description: |
+      Use a syringe with a wide-bore needle. Expect 10–30 % volume
+      increase from osmotic uptake — concentrate later if needed.
+
+  - id: quantify_and_qc
+    title: Quantify (Bradford / A280); check by SDS-PAGE if needed
+    duration: 15 min
+    description: |
+      Compare pre- and post-dialysis concentration; some protein may
+      precipitate during the exchange — centrifuge briefly before
+      quantifying if you see anything cloudy.

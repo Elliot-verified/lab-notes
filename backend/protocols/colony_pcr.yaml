@@ -1,0 +1,67 @@
+id: colony_pcr
+name: Colony PCR (screen transformants)
+version: "0.1"
+description: |
+  Quick screen of bacterial transformants for the right insert without
+  growing up cultures. Pick 6–12 colonies and amplify across the insert
+  junction with one vector-side primer + one insert-side primer.
+
+steps:
+  - id: pick_plate
+    title: Mark and number 6–12 well-isolated colonies on the plate
+    duration: 5 min
+    description: |
+      Mark the bottom of the plate with a Sharpie. Keep a single colony
+      reserved at each pick site so you can grow up positives later.
+
+  - id: prep_master_mix
+    title: Assemble a colony-PCR master mix on ice
+    duration: 10 min
+    description: |
+      Per 15 µL reaction × (N + 1) reactions:
+        7.5 µL  2× Taq master mix
+        0.6 µL  forward primer (10 µM)
+        0.6 µL  reverse primer (10 µM)
+        6.3 µL  water
+      Use Taq, not high-fidelity polymerase — it tolerates whole cells better.
+
+  - id: aliquot_master
+    title: Aliquot 15 µL master mix into labelled PCR strip tubes
+    duration: 5 min
+
+  - id: touch_colonies
+    title: Lightly touch each colony with a sterile tip; swirl into one tube
+    duration: 10 min
+    description: |
+      Then patch the tip onto a fresh selective plate (grid layout). The
+      patch plate is what you grow up for positives — the PCR tube only
+      tells you yes/no.
+
+  - id: thermocycle
+    title: Run colony-PCR programme with extended initial denaturation
+    duration: ~1.5 h
+    description: |
+      95 °C for 5 min (extra time to lyse the cells)
+      30× (95 °C 30 s · Ta °C 30 s · 72 °C 60 s/kb)
+      72 °C for 3 min
+      4 °C hold
+
+  - id: incubate_patches
+    title: Incubate the patch plate at 37 °C while PCR runs
+    duration: 4–8 h
+    description: |
+      Patches should be visible by the time you've run the gel.
+
+  - id: gel
+    title: Run 5 µL of each reaction on a 1 % agarose gel with ladder
+    duration: 45 min
+    description: |
+      Look for a band at the expected size. Include a positive control
+      (verified construct as template) and a negative (no colony).
+
+  - id: pick_positives
+    title: Inoculate 5 mL LB+antibiotic from positive patches for miniprep
+    duration: 10 min + overnight
+    description: |
+      Always sequence-confirm the construct before relying on the
+      colony-PCR result alone.

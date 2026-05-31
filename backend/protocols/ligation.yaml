@@ -1,0 +1,49 @@
+id: ligation
+name: T4 DNA Ligation (sticky or blunt end)
+version: "0.1"
+description: |
+  Standard T4 DNA ligase reaction. Sticky-end ligations are quick (room
+  temperature, 10 min); blunt-end ligations need longer (16 °C overnight)
+  and extra ligase.
+
+steps:
+  - id: quantify_inserts
+    title: Quantify cleaned insert and vector; calculate fmol
+    duration: 10 min
+    description: |
+      fmol = (ng × 1,000,000) / (bp × 650)
+      Use 50–100 ng of vector. Insert:vector 3:1 (sticky) or 5:1 (blunt).
+
+  - id: assemble_reaction
+    title: Combine vector + insert + ligase + buffer + water (20 µL total)
+    duration: 5 min
+    description: |
+      Per 20 µL reaction:
+        50–100 ng  digested, dephosphorylated vector
+        3:1 molar  insert
+        2  µL      10× T4 ligase buffer (fresh — ATP is labile)
+        1  µL      T4 DNA ligase (more for blunt: up to 4 µL)
+        water      to 20 µL
+      Include a vector-only no-insert control in parallel.
+
+  - id: incubate
+    title: Incubate
+    duration: 10 min – overnight
+    description: |
+      Sticky-end:  room temperature for 10 min (or 1 h)
+      Blunt-end:   16 °C overnight in a thermocycler
+
+  - id: heat_inactivate
+    title: Heat-inactivate at 65 °C for 10 min (recommended before transformation)
+    duration: 10 min
+    description: |
+      Improves transformation efficiency since residual ligase / SDS-like
+      buffer components can inhibit competent cells.
+
+  - id: transform
+    title: Transform 2–5 µL into 50 µL competent cells (separate protocol)
+    duration: 2 min
+    description: |
+      Plate the vector-only control alongside — expect very few colonies
+      compared to the ligation. A high background means incomplete
+      dephosphorylation or self-ligating compatible ends.
