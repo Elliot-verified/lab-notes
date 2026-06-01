@@ -1,0 +1,73 @@
+id: rt_qpcr
+name: RT-qPCR (gene expression)
+version: "0.1"
+description: |
+  Reverse-transcribe total RNA to cDNA, then measure relative gene
+  expression by SYBR-based qPCR. Always run a no-RT and a no-template
+  control alongside experimental samples.
+
+steps:
+  - id: dnase_treat
+    title: DNase-treat RNA samples (10 min RT) and quantify
+    duration: 20 min
+    description: |
+      Even a trace of genomic DNA inflates target signal. Use Turbo
+      DNase or RQ1; inactivate per the kit. Re-Nanodrop afterwards
+      so loading mass is accurate.
+
+  - id: rt_reaction
+    title: Reverse-transcribe 500 ng – 1 µg RNA per 20 µL reaction
+    duration: 30 min
+    description: |
+      Typical SuperScript IV:
+        50 °C for 10 min  (RT)
+        80 °C for 10 min  (inactivation)
+      Include a no-RT control (water instead of enzyme) for every sample.
+
+  - id: dilute_cdna
+    title: Dilute cDNA 1:5 in nuclease-free water; store at −20 °C
+    duration: 5 min
+    description: |
+      Working concentration. Aliquot if you'll re-use across days.
+
+  - id: design_plate
+    title: Map the qPCR plate — samples × primer pairs in triplicate
+    duration: 15 min
+    description: |
+      Always include: experimental targets, a reference gene
+      (e.g. GAPDH / 18S / B-actin), no-RT, no-template (NTC). Mark
+      the plate corner with a Sharpie so rotation is unambiguous.
+
+  - id: prep_master_mix
+    title: Prepare SYBR master mix per well (+ 10 % excess)
+    duration: 15 min
+    description: |
+      Per 10 µL well:
+        5  µL    2× SYBR master mix
+        0.4 µL   each primer (10 µM)
+        2.2 µL   water
+        2  µL    cDNA (added separately)
+
+  - id: dispense
+    title: Dispense 8 µL master mix + 2 µL cDNA into each well
+    duration: 20 min
+    description: |
+      Use a multichannel where you can. Seal with optical adhesive
+      film; spin briefly to drive bubbles down.
+
+  - id: run_qpcr
+    title: Run on a qPCR instrument with melt-curve analysis
+    duration: ~1.5 h
+    description: |
+      Standard cycle:
+        95 °C 3 min
+        40× (95 °C 10 s · 60 °C 30 s + plate read)
+        + melt curve 65 → 95 °C in 0.5 °C increments
+
+  - id: analyze
+    title: Inspect melt curves; compute ΔΔCt against reference gene
+    duration: 30 min
+    description: |
+      Single sharp melt peak per primer pair = clean product. Discard
+      wells with multiple peaks or shoulders. Calculate fold change as
+      2^(-ΔΔCt) relative to control condition.

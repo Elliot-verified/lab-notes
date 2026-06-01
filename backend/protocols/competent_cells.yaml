@@ -1,0 +1,76 @@
+id: competent_cells
+name: Chemically Competent E. coli (CaCl₂)
+version: "0.1"
+description: |
+  Make ~50 aliquots of chemically competent E. coli (DH5α, NEB 5-α,
+  Stbl3, BL21, etc.). Typical efficiency 10⁶–10⁷ cfu/µg with the
+  basic CaCl₂ method; switch to Inoue / Hanahan if you need 10⁸–10⁹.
+
+steps:
+  - id: streak_strain
+    title: Streak strain from −80 glycerol stock onto an LB plate (no antibiotic)
+    duration: 5 min + overnight
+    description: |
+      Always start from a fresh streak, not a freezer scrape. Incubate
+      37 °C overnight; should give well-isolated colonies.
+
+  - id: starter_culture
+    title: Inoculate 5 mL LB with a single colony; grow overnight at 37 °C
+    duration: 5 min + overnight
+
+  - id: subculture
+    title: Inoculate 100 mL LB with 1 mL of overnight; grow to OD600 0.3–0.4
+    duration: 2–3 h
+    description: |
+      Pre-warm the flask. Check OD every 30 min once it gets near.
+      Do NOT exceed OD 0.5 — over-grown cells lose competence.
+
+  - id: chill
+    title: Chill cells on ice for 10 min; pre-chill 50 mL Falcons + buffers
+    duration: 10 min
+    description: |
+      From this point on, everything stays on ice. Pre-chill 100 mM
+      CaCl₂ and 100 mM CaCl₂ + 15 % glycerol.
+
+  - id: spin_down
+    title: Spin 4000 × g, 4 °C, 10 min; discard supernatant
+    duration: 15 min
+
+  - id: wash_cacl2
+    title: Resuspend in 25 mL ice-cold 100 mM CaCl₂; incubate 30 min on ice
+    duration: 35 min
+    description: |
+      Resuspend gently — flick or swirl rather than vortex. CaCl₂
+      permeabilises the membrane.
+
+  - id: second_spin
+    title: Spin 4000 × g, 4 °C, 10 min; discard supernatant
+    duration: 15 min
+
+  - id: resuspend_storage
+    title: Resuspend in 4 mL ice-cold 100 mM CaCl₂ + 15 % glycerol
+    duration: 5 min
+    description: |
+      Final density is concentrated ~25×. Should feel viscous from the
+      glycerol.
+
+  - id: aliquot
+    title: Aliquot 50 µL into pre-chilled 1.5 mL tubes on ice
+    duration: 15 min
+    description: |
+      Work fast. Aim for uniform aliquots so each transformation has
+      the same number of cells.
+
+  - id: snap_freeze
+    title: Snap-freeze in liquid nitrogen; store at −80 °C
+    duration: 5 min
+    description: |
+      Snap freezing matters — slow freezing kills competence. Stocks
+      are good for at least a year at −80 °C.
+
+  - id: qc_transformation
+    title: Test efficiency with 1 ng pUC19 in parallel; count colonies
+    duration: 1 h + overnight
+    description: |
+      Plate 100 µL of a 10⁻³ dilution on LB+Amp. Expect ~10⁴–10⁵
+      colonies for 10⁶–10⁷ cfu/µg efficiency. Re-make if < 10⁵ cfu/µg.

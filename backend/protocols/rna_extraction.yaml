@@ -1,0 +1,75 @@
+id: rna_extraction
+name: RNA Extraction (TRIzol)
+version: "0.1"
+description: |
+  Extract total RNA from cells or tissue using TRIzol (acid-guanidinium
+  phenol-chloroform). Yields ~1–10 µg RNA per 10⁶ cells. Plan ~1.5 h
+  per batch.
+
+steps:
+  - id: rnase_zap
+    title: Set up RNase-free workspace — wipe bench, change gloves, use barrier tips
+    duration: 5 min
+    description: |
+      Dedicated tips and tubes. Decontaminate the centrifuge rotor and
+      pipettes with RNaseZap if shared.
+
+  - id: lyse_cells
+    title: Add 1 mL TRIzol per 10⁶ cells (or 50–100 mg tissue); pipette to lyse
+    duration: 5 min
+    description: |
+      For adherent cells, lyse directly in the well; for pellets,
+      resuspend by pipetting until homogenous. Tissues need a
+      homogeniser (bead-mill or Polytron).
+
+  - id: incubate_lysate
+    title: Incubate 5 min at room temperature to dissociate complexes
+    duration: 5 min
+
+  - id: add_chloroform
+    title: Add 200 µL chloroform per 1 mL TRIzol; shake vigorously 15 s
+    duration: 5 min
+    description: |
+      Do NOT vortex — shaking by hand avoids shearing genomic DNA into
+      the aqueous phase.
+
+  - id: phase_separate
+    title: Incubate 3 min RT, then spin 15 min at 12,000 × g, 4 °C
+    duration: 18 min
+    description: |
+      Three layers: aqueous (RNA, top), interphase (DNA), organic
+      (protein, bottom). Transfer ~500 µL of the aqueous phase to a
+      new tube, avoiding the interphase.
+
+  - id: precipitate_rna
+    title: Add 500 µL isopropanol; incubate 10 min RT; spin 10 min at 12,000 × g, 4 °C
+    duration: 22 min
+
+  - id: wash_pellet
+    title: Wash pellet with 1 mL 75 % ethanol; vortex briefly; spin 5 min at 7,500 × g
+    duration: 8 min
+    description: |
+      The pellet is glassy and small; mark the tube orientation so you
+      know where it is. Repeat the wash if salt carry-over is a concern.
+
+  - id: air_dry
+    title: Aspirate ethanol carefully; air-dry pellet 5–10 min
+    duration: 10 min
+    description: |
+      Don't over-dry — pellet becomes hard to dissolve. Should look
+      translucent, not chalky.
+
+  - id: resuspend
+    title: Resuspend in 30–50 µL nuclease-free water; pipette gently
+    duration: 5 min
+    description: |
+      Optional: heat at 55 °C for 10 min to fully dissolve. Place on
+      ice immediately afterwards.
+
+  - id: quantify_qc
+    title: Quantify on Nanodrop (RNA); confirm A260/A280 ≥ 2.0, A260/A230 ≥ 1.8
+    duration: 5 min
+    description: |
+      Poor A260/A230 = phenol carry-over; re-precipitate with sodium
+      acetate + ethanol. Run on a denaturing gel or Bioanalyzer if
+      RNA integrity matters (RIN ≥ 7).

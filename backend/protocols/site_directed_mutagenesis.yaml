@@ -1,0 +1,65 @@
+id: site_directed_mutagenesis
+name: Site-Directed Mutagenesis (KLD)
+version: "0.1"
+description: |
+  Introduce a point mutation, small insertion, or small deletion into a
+  plasmid using back-to-back primers carrying the change, followed by
+  KLD (kinase / ligase / DpnI) treatment and transformation. Based on
+  NEB Q5 SDM kit; works for most plasmids ≤ 8 kb.
+
+steps:
+  - id: design_primers
+    title: Design back-to-back primers around the mutation site
+    duration: 20 min
+    description: |
+      Use NEBaseChanger or equivalent.
+      Substitution: change centered on forward primer 5' end.
+      Insertion:    insertion sequence on the forward primer 5' end.
+      Deletion:     primers flank the region to delete.
+      Both primers should have Tm ≥ 60 °C.
+
+  - id: pcr
+    title: PCR amplify with Q5 polymerase using 1–10 ng template
+    duration: ~1.5 h
+    description: |
+      25 µL reaction:
+        12.5 µL  2× Q5 master mix
+        1.25 µL  forward primer (10 µM)
+        1.25 µL  reverse primer (10 µM)
+        1   µL   template (1–10 ng)
+        9   µL   water
+      Cycle: 98 °C 30 s · 25× (98 °C 10 s · Ta °C 20 s · 72 °C 30 s/kb)
+             · 72 °C 2 min · 4 °C hold
+
+  - id: gel_check
+    title: Run 2 µL on a gel to confirm a single clean band of expected size
+    duration: 45 min
+    description: |
+      If smeary or multiple bands, gel-extract the correct band before KLD.
+
+  - id: kld_reaction
+    title: KLD treatment — 5 min at room temperature
+    duration: 10 min
+    description: |
+      Per 10 µL:
+        1 µL    PCR product (don't column-clean first)
+        5 µL    2× KLD buffer
+        1 µL    KLD enzyme mix
+        3 µL    nuclease-free water
+      KLD phosphorylates ends, ligates the circle, and DpnI-digests
+      the methylated parental template in one tube.
+
+  - id: transform
+    title: Transform 5 µL into 50 µL of high-efficiency competent cells
+    duration: 1 h
+    description: |
+      Heat shock per your transformation protocol. Plate the whole
+      recovery on selective media.
+
+  - id: screen
+    title: Pick 3–6 colonies; miniprep; sequence to confirm the change
+    duration: 5 min + overnight
+    description: |
+      Always sequence — even with high-fidelity polymerases, off-target
+      mutations occur at low frequency. Confirm the intended change is
+      present AND that no other mutations crept in.

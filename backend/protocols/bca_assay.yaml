@@ -1,0 +1,60 @@
+id: bca_assay
+name: BCA Protein Assay (96-well plate)
+version: "0.1"
+description: |
+  Quantify protein concentration by reduction of Cu²⁺ → Cu⁺ by peptide
+  bonds and chelation by BCA (purple complex, read at 562 nm). Linear
+  over ~20–2000 µg/mL. Compatible with most detergents and reducing
+  agents (within limits — check the kit insert).
+
+steps:
+  - id: thaw_standards
+    title: Thaw BSA standards (or freshly dilute from 2 mg/mL stock)
+    duration: 10 min
+    description: |
+      Standard curve typically: 0, 25, 125, 250, 500, 750, 1000, 1500,
+      2000 µg/mL in the same buffer as your samples (matrix matters).
+
+  - id: prepare_samples
+    title: Prepare 1–3 dilutions of each unknown sample
+    duration: 15 min
+    description: |
+      Aim to land your samples in the middle of the curve. Run dilutions
+      in duplicate or triplicate. Save tubes — you'll need them again.
+
+  - id: load_plate
+    title: Pipette 25 µL of standard / sample into wells in duplicate
+    duration: 15 min
+    description: |
+      Use a 96-well flat-bottom plate. Map your layout on paper first;
+      include a blank (matched buffer, no protein).
+
+  - id: make_working
+    title: "Prepare working reagent — 50:1 Reagent A : Reagent B"
+    duration: 5 min
+    description: |
+      Volume needed = 200 µL × number of wells. Mix well; should be
+      apple-green. Discoloured = stop and start over.
+
+  - id: add_reagent
+    title: Add 200 µL working reagent to each well; tap plate to mix
+    duration: 5 min
+
+  - id: incubate
+    title: Cover plate; incubate at 37 °C for 30 min
+    duration: 30 min
+    description: |
+      Cool to room temperature before reading (~10 min) — temperature
+      affects absorbance slightly.
+
+  - id: read_plate
+    title: Read absorbance at 562 nm on a plate reader
+    duration: 5 min
+
+  - id: fit_curve
+    title: Subtract blank; fit standard curve; back-calculate unknowns
+    duration: 10 min
+    description: |
+      Linear fit if working within 20–2000 µg/mL range; otherwise use
+      a 4-parameter fit. Discard any unknown reads outside the curve
+      and re-dilute.

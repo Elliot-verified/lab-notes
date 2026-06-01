@@ -1,0 +1,78 @@
+id: western_blot
+name: Western Blot (SDS-PAGE → transfer → blot)
+version: "0.1"
+description: |
+  Detect a specific protein from a lysate by SDS-PAGE, transfer to PVDF,
+  block, probe with primary + HRP secondary antibodies, and image by
+  chemiluminescence. Plan ~2 days end to end (overnight primary).
+
+steps:
+  - id: prep_samples
+    title: Mix lysates with 4× Laemmli buffer; boil 5 min at 95 °C
+    duration: 15 min
+    description: |
+      Load 10–30 µg total protein per lane. Add fresh DTT or β-ME to
+      reach 1× reducing conditions. Quick-spin after boiling.
+
+  - id: load_run_gel
+    title: Load samples + ladder on a 4–12 % SDS-PAGE gel; run 30 min @ 200 V
+    duration: 45 min
+    description: |
+      Bring the dye front 0.5 cm from the bottom. Pre-cast gradient gels
+      give the best resolution across a wide MW range.
+
+  - id: transfer
+    title: Transfer to PVDF (or nitrocellulose) — wet 90 min or semi-dry 25 min
+    duration: 30–90 min
+    description: |
+      PVDF: activate in methanol 30 s before assembly.
+      Wet: 100 V for 90 min, cold room, with ice pack.
+      Semi-dry: 25 V for 25 min (Trans-Blot Turbo).
+
+  - id: confirm_transfer
+    title: Ponceau-stain briefly to confirm even transfer; rinse off
+    duration: 5 min
+    description: |
+      A quick Ponceau S stain reassures you the transfer worked before
+      committing the night to blocking + primary. Reversible.
+
+  - id: block
+    title: Block in 5 % milk / TBST (or 5 % BSA) for 1 h at RT
+    duration: 1 h
+    description: |
+      Use BSA for phospho-specific antibodies — milk's casein contains
+      endogenous phosphoproteins that can blur signal.
+
+  - id: primary_antibody
+    title: Primary antibody — dilute per datasheet; incubate overnight at 4 °C
+    duration: overnight
+    description: |
+      Typical 1:1000 in 5 % BSA-TBST. Use a sealed bag or rocker dish
+      with the membrane fully covered (~5 mL).
+
+  - id: wash_after_primary
+    title: Wash 3× 10 min in TBST
+    duration: 30 min
+
+  - id: secondary_antibody
+    title: HRP-conjugated secondary 1:5000 in 5 % milk-TBST; 1 h at RT
+    duration: 1 h
+
+  - id: wash_after_secondary
+    title: Wash 3× 10 min in TBST
+    duration: 30 min
+
+  - id: image
+    title: Apply ECL substrate; image on chemi-doc
+    duration: 15 min
+    description: |
+      Mix ECL 1:1 just before applying. Start with a short exposure
+      (10 s) and bracket up — over-exposure saturates fast.
+
+  - id: strip_or_archive
+    title: Optionally strip and re-probe; otherwise dry and archive
+    duration: 30 min
+    description: |
+      Mild stripping buffer for 15 min × 2 then re-block. Sandwich the
+      dried membrane between blotting paper in a labelled envelope for
+      future re-imaging.
