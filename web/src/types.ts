@@ -51,7 +51,23 @@ export type NoteBlock =
       description: string;
       duration?: string | null;
       status?: StepStatus; // defaults to "pending" if omitted
+      image?: string | null; // data URI (data:image/...;base64,...)
     };
+
+export type SuggestEdit = {
+  type: "modify_step" | "insert_step_after" | "append_step";
+  target_block_id?: string | null;
+  title?: string | null;
+  description?: string | null;
+  duration?: string | null;
+  rationale: string;
+};
+
+export type SuggestEditsResponse = {
+  summary: string;
+  edits: SuggestEdit[];
+  model: string;
+};
 
 export type Note = {
   id: string;

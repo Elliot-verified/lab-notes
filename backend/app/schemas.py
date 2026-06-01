@@ -96,3 +96,22 @@ class CreateNoteIn(BaseModel):
 class UpdateNoteIn(BaseModel):
     title: str | None = None
     blocks: list[dict[str, Any]] | None = None
+
+
+class SuggestEditsIn(BaseModel):
+    api_key: str
+
+
+class SuggestEdit(BaseModel):
+    type: str  # modify_step | insert_step_after | append_step
+    target_block_id: str | None = None
+    title: str | None = None
+    description: str | None = None
+    duration: str | None = None
+    rationale: str
+
+
+class SuggestEditsOut(BaseModel):
+    summary: str
+    edits: list[SuggestEdit]
+    model: str

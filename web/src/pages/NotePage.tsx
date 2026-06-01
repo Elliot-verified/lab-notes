@@ -25,14 +25,24 @@ import {
   Check,
   Clock,
   GripVertical,
+  ImagePlus,
+  Loader2,
   Plus,
   Search,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
 
-import { api } from "../api";
-import type { Note, NoteBlock, Protocol } from "../types";
+import { api, settings } from "../api";
+import { fileToDataUri } from "../imageUtil";
+import type {
+  Note,
+  NoteBlock,
+  Protocol,
+  SuggestEdit,
+  SuggestEditsResponse,
+} from "../types";
 
 const newId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -74,6 +84,12 @@ export default function NotePage() {
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+
+  // AI suggestions
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestion, setSuggestion] = useState<SuggestEditsResponse | null>(null);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
+  const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(new Set());
 
   const saveTimer = useRef<number | null>(null);
   const pendingPayload = useRef<Note | null>(null);
@@ -296,6 +312,107 @@ export default function NotePage() {
     navigate("/");
   }
 
+  async function handleAttachImage(blockIdx: number, file: File) {
+    try {
+      const dataUri = await fileToDataUri(file);
+      patchNote((n) => {
+        const blocks = n.blocks.slice();
+        const b = blocks[blockIdx];
+        if (b && b.type === "step") {
+          blocks[blockIdx] = { ...b, image: dataUri };
+        }
+        return { ...n, blocks };
+      });
+    } catch (e) {
+      setError(`Image upload failed: ${e}`);
+    }
+  }
+
+  function handleRemoveImage(blockIdx: number) {
+    patchNote((n) => {
+      const blocks = n.blocks.slice();
+      const b = blocks[blockIdx];
+      if (b && b.type === "step") {
+        blocks[blockIdx] = { ...b, image: null };
+      }
+      return { ...n, blocks };
+    });
+  }
+
+  async function handleSuggestEdits() {
+    if (!note) return;
+    const key = settings.getApiKey();
+    if (!key) {
+      setError(
+        "Add your Anthropic API key in Settings (top-right key icon) before requesting suggestions."
+      );
+      return;
+    }
+    setSuggesting(true);
+    setSuggestion(null);
+    setDismissedSuggestions(new Set());
+    setAppliedSuggestions(new Set());
+    try {
+      const out = await api.suggestEdits(note.id, key);
+      setSuggestion(out);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSuggesting(false);
+    }
+  }
+
+  function applySuggestion(idx: number) {
+    if (!suggestion) return;
+    const edit = suggestion.edits[idx];
+    if (!edit) return;
+    patchNote((n) => {
+      const blocks = n.blocks.slice();
+      if (edit.type === "modify_step" && edit.target_block_id) {
+        const i = blocks.findIndex((b) => b.id === edit.target_block_id);
+        if (i < 0) return n;
+        const b = blocks[i];
+        if (b.type !== "step") return n;
+        blocks[i] = {
+          ...b,
+          ...(edit.title ? { title: edit.title } : {}),
+          ...(edit.description !== null && edit.description !== undefined
+            ? { description: edit.description }
+            : {}),
+          ...(edit.duration !== null && edit.duration !== undefined
+            ? { duration: edit.duration }
+            : {}),
+        };
+      } else if (edit.type === "insert_step_after" && edit.target_block_id) {
+        const i = blocks.findIndex((b) => b.id === edit.target_block_id);
+        if (i < 0) return n;
+        blocks.splice(i + 1, 0, {
+          id: newId(),
+          type: "step",
+          title: edit.title || "(new step)",
+          description: edit.description || "",
+          duration: edit.duration || null,
+          status: "pending",
+        });
+      } else if (edit.type === "append_step") {
+        blocks.push({
+          id: newId(),
+          type: "step",
+          title: edit.title || "(new step)",
+          description: edit.description || "",
+          duration: edit.duration || null,
+          status: "pending",
+        });
+      }
+      return { ...n, blocks };
+    });
+    setAppliedSuggestions((s) => new Set(s).add(idx));
+  }
+
+  function dismissSuggestion(idx: number) {
+    setDismissedSuggestions((s) => new Set(s).add(idx));
+  }
+
   if (!note) return <p>{error || "Loading…"}</p>;
 
   const sortableIds = note.blocks.map((b) => BLOCK_PREFIX + b.id);
@@ -349,11 +466,33 @@ export default function NotePage() {
                   </>
                 )}
               </span>
+              <button
+                className="primary suggest-btn"
+                onClick={handleSuggestEdits}
+                disabled={suggesting}
+                title="Get protocol tweaks from Claude"
+              >
+                {suggesting
+                  ? <><Loader2 size={14} className="spin" /> Thinking…</>
+                  : <><Sparkles size={14} /> Suggest edits with AI</>}
+              </button>
               <button className="ghost danger-ghost" onClick={handleDelete} title="Delete note">
                 <Trash2 size={14} /> Delete note
               </button>
             </div>
           </div>
+
+          {suggestion && (
+            <SuggestionsPanel
+              response={suggestion}
+              dismissed={dismissedSuggestions}
+              applied={appliedSuggestions}
+              onAccept={applySuggestion}
+              onDismiss={dismissSuggestion}
+              onClose={() => setSuggestion(null)}
+              blockIds={new Set(note.blocks.map((b) => b.id))}
+            />
+          )}
 
           {error && <div className="error">{error}</div>}
 
@@ -379,6 +518,8 @@ export default function NotePage() {
                   onChange={(patch) => updateBlock(idx, patch)}
                   onRemove={() => removeBlock(idx)}
                   onKeyDown={(e) => handleBlockKeyDown(e, idx)}
+                  onAttachImage={(file) => handleAttachImage(idx, file)}
+                  onRemoveImage={() => handleRemoveImage(idx)}
                 />
               ))}
 
@@ -537,6 +678,8 @@ function SortableBlock({
   onChange,
   onRemove,
   onKeyDown,
+  onAttachImage,
+  onRemoveImage,
 }: {
   block: NoteBlock;
   overId: string | null;
@@ -546,6 +689,8 @@ function SortableBlock({
   onKeyDown: (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => void;
+  onAttachImage: (file: File) => void;
+  onRemoveImage: () => void;
 }) {
   const sortableId = BLOCK_PREFIX + block.id;
   const {
@@ -640,6 +785,11 @@ function SortableBlock({
               onChange={(e) => onChange({ description: e.target.value })}
               rows={Math.max(1, block.description.split("\n").length)}
             />
+            <StepImageAttachment
+              image={block.type === "step" ? block.image ?? null : null}
+              onAttach={onAttachImage}
+              onRemove={onRemoveImage}
+            />
           </div>
         )}
       </div>
@@ -647,4 +797,154 @@ function SortableBlock({
       {showDropIndicator && <div className="drop-indicator" />}
     </div>
   );
+}
+
+function StepImageAttachment({
+  image,
+  onAttach,
+  onRemove,
+}: {
+  image: string | null;
+  onAttach: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [zoom, setZoom] = useState(false);
+
+  if (image) {
+    return (
+      <>
+        <div className="step-image-wrap">
+          <img
+            src={image}
+            alt="Step result"
+            className="step-image"
+            onClick={() => setZoom(true)}
+          />
+          <button
+            className="icon-btn danger step-image-remove"
+            onClick={onRemove}
+            title="Remove image"
+          >
+            <X size={12} />
+          </button>
+        </div>
+        {zoom && (
+          <div className="slash-backdrop" onClick={() => setZoom(false)}>
+            <img src={image} alt="" className="image-zoom" />
+          </div>
+        )}
+      </>
+    );
+  }
+  return (
+    <>
+      <button
+        className="subtle step-image-btn"
+        onClick={() => fileRef.current?.click()}
+      >
+        <ImagePlus size={13} /> Add image (gel, plate, instrument readout…)
+      </button>
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onAttach(f);
+          e.target.value = "";
+        }}
+      />
+    </>
+  );
+}
+
+function SuggestionsPanel({
+  response,
+  dismissed,
+  applied,
+  onAccept,
+  onDismiss,
+  onClose,
+  blockIds,
+}: {
+  response: SuggestEditsResponse;
+  dismissed: Set<number>;
+  applied: Set<number>;
+  onAccept: (idx: number) => void;
+  onDismiss: (idx: number) => void;
+  onClose: () => void;
+  blockIds: Set<string>;
+}) {
+  return (
+    <div className="ai-panel">
+      <div className="ai-panel-head">
+        <span className="ai-panel-title">
+          <Sparkles size={14} /> AI suggestions
+        </span>
+        <span className="muted xs">{response.model}</span>
+        <button className="icon-btn" onClick={onClose} aria-label="Close" title="Close">
+          <X size={14} />
+        </button>
+      </div>
+      <p className="ai-summary">{response.summary}</p>
+      {response.edits.length === 0 && (
+        <p className="muted small">No edits suggested.</p>
+      )}
+      <ul className="ai-edits">
+        {response.edits.map((edit, idx) => {
+          if (dismissed.has(idx)) return null;
+          const wasApplied = applied.has(idx);
+          const targetExists =
+            edit.type === "append_step" ||
+            (edit.target_block_id ? blockIds.has(edit.target_block_id) : false);
+          return (
+            <li key={idx} className={`ai-edit ${wasApplied ? "applied" : ""}`}>
+              <div className="ai-edit-head">
+                <EditTypeBadge type={edit.type} />
+                {edit.title && <span className="ai-edit-title">{edit.title}</span>}
+                {edit.duration && (
+                  <span className="chip">
+                    <Clock size={11} /> {edit.duration}
+                  </span>
+                )}
+              </div>
+              {edit.description && (
+                <p className="ai-edit-desc">{edit.description}</p>
+              )}
+              <p className="ai-rationale">{edit.rationale}</p>
+              <div className="ai-edit-actions">
+                <button
+                  className="primary small"
+                  disabled={wasApplied || !targetExists}
+                  onClick={() => onAccept(idx)}
+                >
+                  {wasApplied ? (
+                    <><Check size={12} /> Applied</>
+                  ) : (
+                    <><Check size={12} /> Accept</>
+                  )}
+                </button>
+                <button className="ghost small" onClick={() => onDismiss(idx)}>
+                  Dismiss
+                </button>
+                {!targetExists && !wasApplied && (
+                  <span className="muted xs">(target step not found)</span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function EditTypeBadge({ type }: { type: SuggestEdit["type"] }) {
+  const label =
+    type === "modify_step" ? "modify"
+    : type === "insert_step_after" ? "insert"
+    : "append";
+  return <span className="pill pill-branched">{label}</span>;
 }

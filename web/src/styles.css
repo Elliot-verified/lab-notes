@@ -1003,9 +1003,164 @@ section + section { margin-top: var(--s-10); }
 }
 .banner { animation: banner-in 0.25s ease both; }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.9s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ============================================================
+   Header settings + dialog
+   ============================================================ */
+
+.header-settings { margin-left: auto; }
+
+.settings-popover { width: 480px; max-width: 92vw; padding: 0; }
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.settings-body { padding: var(--s-4); }
+.settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 500;
+  margin-bottom: var(--s-2);
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.settings-row input { flex: 1; font-family: var(--font-mono); font-size: var(--text-sm); }
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+/* ============================================================
+   Step image attachment
+   ============================================================ */
+
+.step-image-btn {
+  margin-top: var(--s-2);
+  font-size: var(--text-xs);
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+}
+
+.step-image-wrap {
+  position: relative;
+  margin-top: var(--s-3);
+  display: inline-block;
+}
+.step-image {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  cursor: zoom-in;
+  display: block;
+}
+.step-image-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+}
+.image-zoom {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  cursor: zoom-out;
+}
+
+/* ============================================================
+   AI suggestions panel
+   ============================================================ */
+
+.suggest-btn { white-space: nowrap; }
+
+.ai-panel {
+  background: color-mix(in oklab, var(--branched-soft) 55%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--branched) 28%, transparent);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+.ai-panel-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+.ai-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--branched);
+}
+.ai-panel-head .icon-btn { margin-left: auto; }
+
+.ai-summary {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  margin-bottom: var(--s-3);
+}
+
+.ai-edits { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+
+.ai-edit {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--s-3);
+  transition: opacity 0.15s ease;
+}
+.ai-edit.applied { opacity: 0.55; }
+
+.ai-edit-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+.ai-edit-title { font-weight: 500; font-size: var(--text-sm); }
+.ai-edit-desc {
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+.ai-rationale {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-top: 6px;
+  font-style: italic;
+}
+.ai-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+.ai-edit-actions .primary.small,
+.ai-edit-actions .ghost.small {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
 }

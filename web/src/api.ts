@@ -1,4 +1,26 @@
-import type { Note, NoteBlock, NoteSummary, Protocol, Run } from "./types";
+import type {
+  Note,
+  NoteBlock,
+  NoteSummary,
+  Protocol,
+  Run,
+  SuggestEditsResponse,
+} from "./types";
+
+// ── Client-side settings (API key in localStorage) ─────────────────────
+const API_KEY_STORAGE = "lab-notes:anthropic-api-key";
+
+export const settings = {
+  getApiKey(): string {
+    try { return localStorage.getItem(API_KEY_STORAGE) || ""; } catch { return ""; }
+  },
+  setApiKey(key: string) {
+    try {
+      if (key) localStorage.setItem(API_KEY_STORAGE, key);
+      else localStorage.removeItem(API_KEY_STORAGE);
+    } catch { /* ignore */ }
+  },
+};
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -51,5 +73,10 @@ export const api = {
   deleteNote: (id: string) =>
     fetch(`/api/notes/${id}`, { method: "DELETE" }).then((r) => {
       if (!r.ok) throw new Error(`delete failed: ${r.status}`);
+    }),
+  suggestEdits: (noteId: string, apiKey: string) =>
+    req<SuggestEditsResponse>(`/api/notes/${noteId}/suggest_edits`, {
+      method: "POST",
+      body: JSON.stringify({ api_key: apiKey }),
     }),
 };

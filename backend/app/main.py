@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 import uuid
 
-from . import protocols, runs, schemas
+from . import ai, protocols, runs, schemas
 from .db import Base, engine, get_session
 from .models import Note, Run
 
@@ -243,3 +243,31 @@ def delete_note(note_id: str, db: Session = Depends(get_session)):
     if note is not None:
         db.delete(note)
         db.commit()
+
+
+@app.post("/api/notes/{note_id}/suggest_edits", response_model=schemas.SuggestEditsOut)
+def suggest_edits_endpoint(
+    note_id: str,
+    payload: schemas.SuggestEditsIn,
+    db: Session = Depends(get_session),
+):
+    note = db.get(Note, note_id)
+    if note is None:
+        raise HTTPException(404, "note not found")
+    if not payload.api_key:
+        raise HTTPException(400, "api_key required")
+
+    try:
+        out = ai.suggest_edits(
+            api_key=payload.api_key,
+            title=note.title,
+            blocks=note.blocks or [],
+        )
+    except Exception as e:  # surface anthropic / network errors verbatim
+        raise HTTPException(502, f"AI request failed: {e}")
+
+    return schemas.SuggestEditsOut(
+        summary=out.get("summary", ""),
+        edits=[schemas.SuggestEdit(**e) for e in out.get("edits", [])],
+        model=ai.MODEL,
+    )
